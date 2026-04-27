@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Plus, BookOpen, Clock, Trash2, Settings } from 'lucide-react';
+import { Send, Plus, BookOpen, Clock, Trash2, Settings, Moon, Sun } from 'lucide-react';
+
+import { SidebarTab, ThemeMode } from '../types';
 
 interface Novel {
   id: string;
@@ -16,9 +18,22 @@ interface LandingPageProps {
   existingNovels: Novel[];
   onToggleMockData: () => void;
   onOpenSettings: () => void;
+  theme: ThemeMode;
+  onThemeChange: (theme: ThemeMode) => void;
 }
 
-export default function LandingPage({ onStartNew, onSelectNovel, existingNovels, onToggleMockData, onOpenSettings }: LandingPageProps) {
+export default function LandingPage({ 
+  onStartNew, 
+  onSelectNovel, 
+  existingNovels, 
+  onToggleMockData, 
+  onOpenSettings,
+  theme,
+  onThemeChange
+}: LandingPageProps) {
+  const isDarkMode = theme === 'ink';
+  const isPaperMode = theme === 'paper';
+  const isClassicMode = theme === 'classic';
   const [inputValue, setInputValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   
@@ -72,7 +87,9 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
             x: [0, 50, -30, 0], 
             y: [0, -30, 40, 0],
             scale: isFocused ? [1.1, 1.2, 1.1] : [1, 1.1, 0.9, 1],
-            opacity: isFocused ? 0.15 : 0.05
+            opacity: isDarkMode 
+              ? (isFocused ? 0.15 : 0.05) 
+              : (isFocused ? 0.08 : 0.02)
           }}
           transition={{ duration: isFocused ? 10 : 25, repeat: Infinity, ease: "linear" }}
           className="absolute top-[10%] left-[15%] w-[40vw] h-[40vw] bg-brand-red/5 blur-[120px] rounded-full"
@@ -82,7 +99,9 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
             x: [0, -60, 40, 0], 
             y: [0, 50, -20, 0],
             scale: isFocused ? [1, 1.1, 1] : [1, 0.9, 1.1, 1],
-            opacity: isFocused ? 0.15 : 0.05
+            opacity: isDarkMode 
+              ? (isFocused ? 0.15 : 0.05) 
+              : (isFocused ? 0.08 : 0.02)
           }}
           transition={{ duration: isFocused ? 15 : 35, repeat: Infinity, ease: "linear" }}
           className="absolute bottom-[10%] right-[10%] w-[45vw] h-[45vw] bg-text-muted/5 blur-[150px] rounded-full"
@@ -92,9 +111,39 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
       {/* Top Right Actions */}
       <div className="absolute top-6 right-8 z-50 flex items-center gap-4">
         <button 
+          onClick={() => {
+            if (theme === 'ink') onThemeChange('paper');
+            else if (theme === 'paper') onThemeChange('classic');
+            else onThemeChange('ink');
+          }}
+          className="p-3 rounded-xl bg-panel-bg/20 border border-hud-border/50 text-muted-text hover:text-brand-red hover:border-brand-red/30 transition-all group backdrop-blur-md shadow-xl"
+          title="切换外观风格"
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={theme}
+              initial={{ rotate: -45, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 45, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {isDarkMode ? (
+                <Moon className="w-5 h-5 group-hover:scale-110 transition-transform duration-500" />
+              ) : isPaperMode ? (
+                <Sun className="w-5 h-5 group-hover:scale-110 transition-transform duration-500" />
+              ) : (
+                <motion.div className="relative">
+                  <Sun className="w-5 h-5 group-hover:scale-110 transition-transform duration-500 text-blue-500" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                </motion.div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </button>
+        <button 
           onClick={onOpenSettings}
           className="p-3 rounded-xl bg-panel-bg/20 border border-hud-border/50 text-muted-text hover:text-brand-red hover:border-brand-red/30 transition-all group backdrop-blur-md shadow-xl"
-          title="API Settings"
+          title="设置"
         >
           <Settings className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" />
         </button>
@@ -131,8 +180,8 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
               className="flex items-center justify-center gap-4 overflow-hidden whitespace-nowrap"
             >
               <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-hud-border" />
-              <span className="text-xl md:text-2xl font-display font-light tracking-[0.5em] text-muted-text uppercase">
-                Plot Pilot
+              <span className="text-xl md:text-2xl font-sans font-light tracking-[0.5em] text-muted-text uppercase">
+                PLOT PILOT
               </span>
               <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-hud-border" />
             </motion.div>
@@ -142,7 +191,7 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
           <motion.p 
             layout
             variants={itemVariants}
-            className="text-lg md:text-xl font-serif italic text-muted-text mb-16 tracking-[0.5em]"
+            className="text-lg md:text-xl font-sans italic text-muted-text mb-16 tracking-[0.5em]"
           >
             —— 作者的领航员 ——
           </motion.p>
@@ -163,7 +212,7 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
                 placeholder="在此处输入你的故事原点..."
-                className="flex-1 bg-transparent border-none px-6 py-4 text-lg focus:outline-none placeholder:text-muted-text/30 font-serif caret-brand-red"
+                className="flex-1 bg-transparent border-none px-6 py-4 text-lg focus:outline-none placeholder:text-muted-text/30 font-sans caret-brand-red"
                 style={{ caretColor: 'var(--brand-red)' }} // The Cinnabar Dot (caret)
               />
               <button 
@@ -180,9 +229,9 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
             </div>
             
             {/* Subtle Hint */}
-            <div className="mt-4 flex justify-center gap-8 text-[9px] font-mono text-muted-text/40 tracking-[0.3em] uppercase">
-              <span className="flex items-center gap-1">INITIATE PROTOCOL</span>
-              <span className="flex items-center gap-1">LOGIC READY</span>
+            <div className="mt-4 flex justify-center gap-8 text-[10px] font-mono text-muted-text/40 tracking-[0.3em] uppercase">
+              <span className="flex items-center gap-1">启动智能创作程序</span>
+              <span className="flex items-center gap-1">逻辑引擎就绪</span>
             </div>
           </motion.form>
         </motion.div>
@@ -201,11 +250,11 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
             <div className="p-8 pb-12">
               <div className="max-w-6xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-sm font-display font-bold tracking-[0.3em] text-muted-text uppercase flex items-center gap-2">
+                  <h2 className="text-sm font-sans font-bold tracking-[0.3em] text-muted-text uppercase flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-brand-red" />
                     我的作品库
                   </h2>
-                  <span className="text-[10px] font-mono text-muted-text">{existingNovels.length} PROJECTS FOUND</span>
+                  <span className="text-[10px] font-mono text-muted-text">已发现 {existingNovels.length} 个项目</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -220,10 +269,10 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
                       
                       <div className="relative z-10">
                         <div className="flex justify-between items-start mb-4">
-                          <span className="text-[9px] font-mono text-brand-red border border-brand-red/30 px-2 py-0.5 rounded uppercase">
+                          <span className="text-[10px] font-mono text-brand-red border border-brand-red/30 px-2 py-0.5 rounded uppercase">
                             {novel.status}
                           </span>
-                          <div className="flex items-center gap-1 text-[9px] font-mono text-muted-text">
+                          <div className="flex items-center gap-1 text-[10px] font-mono text-muted-text">
                             <Clock className="w-3 h-3" />
                             {novel.lastEdited}
                           </div>
@@ -235,7 +284,7 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
                         
                         <div className="flex items-center justify-between mt-6 pt-4 border-t border-hud-border/30">
                           <div className="flex flex-col">
-                            <span className="text-[8px] font-mono text-muted-text uppercase">Word Count</span>
+                            <span className="text-[10px] font-mono text-muted-text uppercase">字数统计</span>
                             <span className="text-xs font-medium">{novel.wordCount.toLocaleString()}</span>
                           </div>
                           <div className="p-2 rounded-full bg-hud-border/20 text-muted-text group-hover:bg-brand-red group-hover:text-white transition-all">
@@ -253,18 +302,19 @@ export default function LandingPage({ onStartNew, onSelectNovel, existingNovels,
       </AnimatePresence>
 
       {/* Footer Accents */}
-      <div className="p-6 flex justify-between items-center text-[9px] font-mono text-muted-text tracking-tighter shrink-0">
+      <div className="py-4 px-6 flex justify-between items-center text-[10px] font-mono text-muted-text tracking-tighter shrink-0 border-t border-hud-border/10">
         <div className="flex gap-4 items-center">
-          <span className="opacity-50">INK-TECH PROTOCOL V1.0</span>
-          <span className="opacity-50">SYSTEM: STABLE</span>
+          <span className="opacity-50 font-sans uppercase tracking-widest text-[8px]">PROT-V1.0</span>
+          <div className="w-px h-3 bg-hud-border/30" />
+          <span className="opacity-50">系统状态: 稳定运转</span>
           <button 
             onClick={onToggleMockData}
-            className="ml-4 px-2 py-1 border border-hud-border hover:border-brand-red hover:text-brand-red transition-all rounded uppercase"
+            className="ml-4 px-2 py-0.5 border border-hud-border hover:border-brand-red hover:text-brand-red transition-all rounded uppercase text-[9px]"
           >
-            {existingNovels.length > 0 ? "隐藏作品库 (测试无作品状态)" : "恢复作品库 (测试有作品状态)"}
+            {existingNovels.length > 0 ? "隐藏作品库" : "恢复作品库"}
           </button>
         </div>
-        <span className="opacity-50">© 2026 PLOT PILOT | 墨枢</span>
+        <span className="opacity-40">© 2026 PLOT PILOT | 墨枢</span>
       </div>
     </div>
   );

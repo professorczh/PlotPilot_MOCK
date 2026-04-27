@@ -47,7 +47,9 @@ export default function RelationshipGraph() {
     const simulation = d3.forceSimulation<Node>(data.nodes as Node[])
       .force('link', d3.forceLink<Node, Link>(data.links).id(d => d.id).distance(60))
       .force('charge', d3.forceManyBody().strength(-150))
-      .force('center', d3.forceCenter(width / 2, height / 2));
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .velocityDecay(0.4) // Increase friction to stabilize faster
+      .alphaMin(0.005); // Stop earlier to save CPU
 
     const link = svg.append('g')
       .attr('stroke', '#3f3f46')
@@ -122,6 +124,6 @@ export default function RelationshipGraph() {
   }, []);
 
   return (
-    <svg ref={svgRef} className="w-full h-full bg-app-bg/50 transition-colors duration-300" />
+    <svg ref={svgRef} className="w-full h-full flex bg-app-bg/50 transition-colors duration-300" />
   );
 }

@@ -4,6 +4,8 @@
 :root {
   --app-bg: #0F0F0F;
   --panel-bg: #171717;
+  --editor-bg: #121212;
+  --bubble-bg: #1e1e1e;
   --hud-border: #262626;
   --text-main: #FFFFFF;
   --text-muted: #737373;
@@ -13,12 +15,25 @@
 }
 
 .light-theme {
-  --app-bg: #f4f1ea;
-  --panel-bg: #ffffff;
-  --hud-border: #e2e2d5;
+  --app-bg: #ece9e0;         /* L1: Bottom Layer (Base Background) */
+  --panel-bg: #f3f1e9;       /* L2: Middle Layer (Sidebars, HUD containers) */
+  --editor-bg: #fdfcf9;      /* L3: Top Layer (Main Reading/Writing Area) */
+  --bubble-bg: #e9e6dc;      /* L4: Nested Layer (AI Bubbles, Nested info chips) */
+  --hud-border: #dcd9cf;     /* Border color to match the paper tones */
   --text-main: #1a1a1a;
-  --text-muted: #666655;
+  --text-muted: #555544;     /* Slightly darker for better readability on paper */
   --brand-red: #991b1b;
+}
+
+.classic-theme {
+  --app-bg: #f5f5f5;         /* L1: Cool neutral light gray */
+  --panel-bg: #ffffff;       /* L2: Pure white panels */
+  --editor-bg: #ffffff;      /* L3: Pure white editor */
+  --bubble-bg: #f0f0f0;      /* L4: Subtle gray for nested bubbles */
+  --hud-border: #e0e0e0;     /* Clean neutral borders */
+  --text-main: #171717;      /* Deep black for high contrast */
+  --text-muted: #6b7280;     /* Neutral gray for secondary text */
+  --brand-red: #da2525;      /* Vibrant UI red */
 }
 
 @theme {
@@ -32,6 +47,8 @@
   --color-hud-red: #991B1B;
   --color-app-bg: var(--app-bg);
   --color-panel-bg: var(--panel-bg);
+  --color-editor-bg: var(--editor-bg);
+  --color-bubble-bg: var(--bubble-bg);
   --color-hud-border: var(--hud-border);
   --color-muted-text: var(--text-muted);
   --color-text-main: var(--text-main);
@@ -49,43 +66,77 @@
     100% { transform: translateY(1000%); }
   }
 
-  @keyframes scroll-up {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-100%); }
+  @keyframes shimmer-sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 
-  --animate-scroll-up: scroll-up 20s linear infinite;
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-shimmer-sweep: shimmer-sweep 2s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
+@utility bg-gradient-radial {
+  background-image: radial-gradient(circle, var(--tw-gradient-stops));
 }
 
 /* Global Scrollbar Reset */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent;
-}
-
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:start,
+::-webkit-scrollbar-button:end,
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:start:decrement,
+::-webkit-scrollbar-button:vertical:end:increment,
+::-webkit-scrollbar-button:vertical:end:decrement,
+::-webkit-scrollbar-button:horizontal:start:increment,
+::-webkit-scrollbar-button:horizontal:start:decrement,
+::-webkit-scrollbar-button:horizontal:end:increment,
+::-webkit-scrollbar-button:horizontal:end:decrement {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-track-piece {
+  background: transparent !important;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background-color: transparent;
   border-radius: 10px;
-  border: 1px solid transparent;
-  background-clip: content-box;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: #DC2626;
+/* Hide by default, show on parent hover or scrolling class with 0.5s transition */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  transition: background-color 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb,
+.custom-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(63, 63, 70, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--brand-red) !important;
 }
 
 @layer base {
   body {
-    @apply bg-app-bg text-text-main antialiased font-sans transition-colors duration-300;
+    @apply bg-app-bg text-text-main antialiased font-sans;
+    transition: background-color 0.8s cubic-bezier(0.23, 1, 0.32, 1), 
+                color 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                border-color 0.8s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   ::selection {
@@ -95,15 +146,15 @@
 
 @layer components {
   .hud-panel {
-    @apply bg-panel-bg/80 backdrop-blur-md border border-hud-border rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.5)];
+    @apply bg-panel-bg/80 backdrop-blur-md border border-hud-border rounded-xl;
   }
 
   .hud-border-red {
-    @apply border-brand-red/50 shadow-[0_0_10px_rgba(220,38,38,0.2)];
+    @apply border-brand-red/50 shadow-none;
   }
 
   .hud-glow-red {
-    @apply shadow-[0_0_15px_rgba(220,38,38,0.4)];
+    @apply bg-brand-red/10;
   }
 
   .glass-morphism {
@@ -112,6 +163,16 @@
 
   .custom-scrollbar {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 
   .ink-gradient {

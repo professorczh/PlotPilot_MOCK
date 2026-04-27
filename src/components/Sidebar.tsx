@@ -1,75 +1,172 @@
-import { Search, List, ChevronRight, Plus, MoreVertical } from 'lucide-react';
+import { useState } from 'react';
+import { Search, ChevronRight, Plus, Library, Book, FileText, ChevronDown } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { NovelBook } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
-  chapters: { id: string; title: string; wordCount: number }[];
+  book: NovelBook;
   activeChapterId: string;
   onChapterSelect: (id: string) => void;
 }
 
-export default function Sidebar({ chapters, activeChapterId, onChapterSelect }: SidebarProps) {
+export default function Sidebar({ book, activeChapterId, onChapterSelect }: SidebarProps) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set([book.id, book.volumes[0].id, book.volumes[0].stages[0].id]));
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const toggleExpand = (id: string) => {
+    const next = new Set(expandedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setExpandedIds(next);
+  };
+
+  const isExpanded = (id: string) => expandedIds.has(id);
+
   return (
-    <div className="w-full bg-panel-bg/50 backdrop-blur-sm flex flex-col h-full overflow-hidden">
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-muted-text">
-            <List className="w-4 h-4" />
-            <span className="text-xs font-display font-bold uppercase tracking-[0.2em]">Navigation</span>
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      <div className="p-4 space-y-4 shrink-0">
+        <div className="flex items-center justify-between whitespace-nowrap">
+          <div className="flex items-center gap-2 text-muted-text overflow-hidden">
+            <Library className="w-4 h-4 shrink-0" />
+            <span className="text-xs font-sans font-bold uppercase tracking-[0.2em] truncate">章节目录</span>
           </div>
-          <button className="p-1 text-muted-text hover:text-brand-red transition-colors">
-            <Plus className="w-4 h-4" />
-          </button>
         </div>
         
         <div className="relative group">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-text group-focus-within:text-brand-red transition-colors" />
           <input 
             type="text" 
-            placeholder="Search chapters..." 
-            className="w-full bg-app-bg/50 border border-hud-border rounded-md py-1.5 pl-9 pr-3 text-xs text-text-main placeholder:text-muted-text focus:outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-sans"
+            placeholder="搜索章节..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-app-bg/50 border border-hud-border rounded-lg py-1.5 pl-9 pr-3 text-xs text-text-main placeholder:text-muted-text focus:outline-none focus:border-brand-red/50 focus:ring-1 focus:ring-brand-red/20 transition-all font-sans"
           />
         </div>
       </div>
       
       <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4">
-        <div className="space-y-0.5">
-          {chapters.map((chapter, index) => (
-            <button
-              key={chapter.id}
-              onClick={() => onChapterSelect(chapter.id)}
-              className={cn(
-                "w-full flex items-center justify-between px-3 py-2.5 rounded-md transition-all border border-transparent group",
-                activeChapterId === chapter.id 
-                  ? "bg-brand-red/10 border-brand-red/30 text-text-main shadow-[inset_0_0_10px_rgba(220,38,38,0.05)]" 
-                  : "text-muted-text hover:bg-brand-red/5 hover:text-text-main"
-              )}
+        <div className="space-y-1">
+          {/* Level 1: Book */}
+          <div className="space-y-1">
+            <button 
+              onClick={() => toggleExpand(book.id)}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
             >
-              <div className="flex items-center gap-3">
-                <span className={cn(
-                  "text-xs font-mono px-1.5 py-0.5 rounded border transition-colors",
-                  activeChapterId === chapter.id 
-                    ? "bg-brand-red border-brand-red text-white" 
-                    : "bg-app-bg border-hud-border text-muted-text group-hover:border-brand-red/50"
-                )}>
-                  {(index + 1).toString().padStart(2, '0')}
-                </span>
-                <span className="text-xs font-medium truncate max-w-[120px]">{chapter.title}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity">
-                  {chapter.wordCount.toLocaleString()}
-                </span>
-                <ChevronRight className={cn("w-3 h-3 transition-transform", activeChapterId === chapter.id ? "rotate-90 text-brand-red" : "text-muted-text")} />
-              </div>
+              {isExpanded(book.id) ? <ChevronDown className="w-3.5 h-3.5 text-muted-text" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-text" />}
+              <Library className="w-4 h-4 text-brand-red" />
+              <span className="text-xs font-bold font-sans tracking-wider truncate text-text-main">{book.title}</span>
             </button>
-          ))}
+
+            <AnimatePresence initial={false}>
+              {isExpanded(book.id) && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden space-y-1 ml-2 border-l border-hud-border/40 pl-2"
+                >
+                  {/* Level 2: Volumes */}
+                  {book.volumes.map(volume => (
+                    <div key={volume.id} className="space-y-1">
+                      <button 
+                        onClick={() => toggleExpand(volume.id)}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
+                      >
+                        {isExpanded(volume.id) ? <ChevronDown className="w-3 h-3 text-muted-text" /> : <ChevronRight className="w-3 h-3 text-muted-text" />}
+                        <Book className="w-3.5 h-3.5 text-brand-red opacity-80" />
+                        <span className="text-xs font-medium truncate text-text-main/90">{volume.title}</span>
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {isExpanded(volume.id) && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden space-y-1 ml-2 border-l border-hud-border/40 pl-2"
+                          >
+                            {/* Level 3: Stages */}
+                            {volume.stages.map(stage => (
+                              <div key={stage.id} className="space-y-1">
+                                <button 
+                                  onClick={() => toggleExpand(stage.id)}
+                                  className="w-full flex flex-col px-2 py-2 rounded-lg hover:bg-white/5 transition-colors group"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {isExpanded(stage.id) ? <ChevronDown className="w-2.5 h-2.5 text-muted-text" /> : <ChevronRight className="w-2.5 h-2.5 text-muted-text" />}
+                                    <span className="text-[11px] font-bold text-text-main/80 flex items-center gap-2">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-brand-red" />
+                                      {stage.title}
+                                    </span>
+                                  </div>
+                                  {stage.description && (
+                                    <p className="text-[10px] text-muted-text mt-1 pl-4 leading-relaxed line-clamp-2 opacity-60 font-sans italic text-left">
+                                      {stage.description}
+                                    </p>
+                                  )}
+                                </button>
+
+                                <AnimatePresence initial={false}>
+                                  {isExpanded(stage.id) && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: 'auto', opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      className="overflow-hidden space-y-0.5 ml-4 border-l border-hud-border/30 pl-3"
+                                    >
+                                      {/* Level 4: Chapters */}
+                                      {stage.chapters.map((chapter) => (
+                                        <button
+                                          key={chapter.id}
+                                          onClick={() => onChapterSelect(chapter.id)}
+                                          className={cn(
+                                            "w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all group",
+                                            activeChapterId === chapter.id 
+                                              ? "bg-brand-red/10 text-text-main" 
+                                              : "text-muted-text hover:bg-white/5 hover:text-text-main"
+                                          )}
+                                        >
+                                          <div className="flex-1 min-w-0 flex items-center gap-2">
+                                            <FileText className={cn("w-3 h-3 flex-shrink-0", activeChapterId === chapter.id ? "text-brand-red" : "text-muted-text/50")} />
+                                            <span className="text-[11px] truncate">{chapter.title}</span>
+                                          </div>
+                                          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                                            {chapter.status === 'completed' ? (
+                                              <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-full border border-emerald-500/20 font-bold uppercase">已收稿</span>
+                                            ) : (
+                                              <span className="text-[8px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full border border-amber-500/20 font-bold uppercase">未收稿</span>
+                                            )}
+                                            {chapter.wordCount > 0 && (
+                                              <span className="text-[9px] font-mono opacity-40">{chapter.wordCount}</span>
+                                            )}
+                                          </div>
+                                        </button>
+                                      ))}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
-      <div className="p-4 border-t border-hud-border bg-app-bg/30">
-        <div className="flex items-center justify-between text-xs font-mono text-muted-text mb-2 tracking-tighter">
-          <span>SYSTEM STATUS</span>
-          <span className="text-emerald-400">ONLINE</span>
+      <div className="p-3 border-t border-hud-border bg-app-bg/30">
+        <div className="flex items-center justify-between text-[10px] font-mono text-muted-text mb-1 tracking-tighter uppercase opacity-60">
+          <span>逻辑节点状态</span>
+          <span className="text-emerald-400">在线</span>
         </div>
         <div className="h-1 bg-hud-border rounded-full overflow-hidden">
           <div className="h-full bg-brand-red w-3/4 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
