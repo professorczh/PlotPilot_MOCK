@@ -21,13 +21,13 @@ export const TaskStageNavigator: React.FC<TaskStageNavigatorProps> = ({
       <div className="flex items-center gap-2 px-1 mb-2">
         <div className="w-1 h-3 bg-brand-red rounded-full" />
         <span className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-muted-text/60">
-          方案演化分支 / EVOLUTION BRANCHES
+          方案演化分支
         </span>
       </div>
 
       {suggestions.map((suggestion, idx) => (
         <motion.div 
-          key={suggestion.id}
+          key={`suggestion-item-${suggestion.id}-${idx}`}
           // 修复漂移 Bug：彻底移除 Y 轴位移动画，改为纯透明度与极小缩放，防止视觉“下沉感”
           initial={{ opacity: 0, scale: 0.99 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -61,10 +61,7 @@ export const TaskStageNavigator: React.FC<TaskStageNavigatorProps> = ({
               )}>
                 {suggestion.isRecommended ? <Star className="w-3.5 h-3.5 fill-current" /> : <Wand2 className="w-3.5 h-3.5" />}
               </div>
-              <span className={cn(
-                "text-[12px] font-sans font-bold tracking-tight",
-                isDarkMode ? "text-text-main" : "text-slate-800"
-              )}>
+              <span className="text-[12px] font-sans font-bold tracking-tight text-text-main">
                 {suggestion.title}
               </span>
             </div>
@@ -75,10 +72,7 @@ export const TaskStageNavigator: React.FC<TaskStageNavigatorProps> = ({
             )}
           </div>
           
-          <p className={cn(
-            "text-[14px] font-sans leading-relaxed mb-5",
-            isDarkMode ? "text-text-main/70" : "text-slate-700"
-          )}>
+          <p className="text-[14px] font-sans leading-relaxed mb-5 text-text-main/70">
             {suggestion.content}
           </p>
           

@@ -1,0 +1,30 @@
+export const characterData = [
+  { id: '1', name: '赢扶苏', role: '主角', description: '现代顶尖公关公司CEO重生为秦公子扶苏，擅于舆情引导与资源整合。', color: 'bg-red-500', weight: "壹级 · 枢密", resonance: "S级 · 极致", threat: "陆级 · 潜伏", img: "/assets/story/char_1.png" },
+  { id: '11', name: '扶苏', role: '主角', description: '秦始皇长子，大秦帝国的合法继承人。', color: 'bg-red-500', weight: "壹级 · 枢密", resonance: "S级 · 极致", threat: "陆级 · 潜伏", img: "/assets/story/char_1.png" },
+  { id: '12', name: '始皇帝', role: '皇帝', description: '千古一帝，大秦帝国的缔造者。', color: 'bg-amber-700', weight: "至尊 · 乾坤", resonance: "EX · 无垠", threat: "拾级 · 天威", img: "/assets/story/char_5.png" },
+  { id: '13', name: '嬴政', role: '皇帝', description: '始皇帝名讳。', color: 'bg-amber-700', weight: "至尊 · 乾坤", resonance: "EX · 无垠", threat: "拾级 · 天威", img: "/assets/story/char_5.png" },
+  { id: '8', name: '林墨', role: '主角(前世)', description: '现代社会的公关专家，灵魂穿越至远古荒野。', color: 'bg-red-400', weight: "壹级 · 原始", resonance: "S级 · 基石", threat: "肆级 · 正直", img: "/assets/story/char_1.png" },
+  { id: '9', name: '李拓', role: '关键配角', description: '负责巡视的秦吏，敏锐察觉林墨不凡。', color: 'bg-slate-500', weight: "叁级 · 鹰犬", resonance: "B级 · 稳定", threat: "伍级 · 敏锐", img: "/assets/story/char_5.png" },
+  { id: '10', name: '伍老', role: '配角', description: '巴邑老农，饱经风霜，大智若愚。', color: 'bg-amber-600', weight: "伍级 · 百姓", resonance: "C级 · 迟钝", threat: "肆级 · 安稳", img: "/assets/story/char_7.png" },
+  { id: '2', name: '张苍', role: '导师', description: '原秦廷御史，精通秦代典制与律法，恪守官规。', color: 'bg-blue-400', weight: "贰级 · 律令", resonance: "A级 · 高频", threat: "叁级 · 稳定", img: "/assets/story/char_2.png" },
+  { id: '3', name: '赵高', role: '对手', description: '秦廷中车府令，擅于揣摩上意、玩弄权术，阴险狡诈。', color: 'bg-purple-500', weight: "壹级 · 阴影", resonance: "B级 · 混沌", threat: "玖级 · 极危", img: "/assets/story/char_3.png" },
+  { id: '4', name: '蒙恬', role: '盟友', description: '大秦名将，统领三十万大军修筑长城，忠诚刚毅。', color: 'bg-emerald-500', weight: "壹级 · 执剑", resonance: "A级 · 全域", threat: "伍级 · 锋芒", img: "/assets/story/char_4.png" },
+  { id: '5', name: '李斯', role: '中立者', description: '秦代丞相，法家代表人物。极度功利且重视权力稳固。', color: 'bg-amber-500', weight: "壹级 · 辅弼", resonance: "A级 · 均衡", threat: "柒级 · 多变", img: "/assets/story/char_5.png" },
+  { id: '6', name: '王离', role: '配角', description: '秦大将军王翦之孙，承袭武成侯爵位，刚直勇猛。', color: 'bg-slate-400', weight: "叁级 · 锋刃", resonance: "B+ 局部", threat: "肆级 · 正直", img: "/assets/story/char_6.png" },
+  { id: '7', name: '郑国', role: '配角', description: '原韩国水工，主持修建郑国渠，精通水利工程。', color: 'bg-cyan-400', weight: "肆级 · 工造", resonance: "A+ 根基", threat: "贰级 · 沉稳", img: "/assets/story/char_7.png" },
+];
+
+export const geographyData = [
+  { id: '1', name: '咸阳', type: '都会', description: '秦统一后的核心都城，位于关中平原渭水北岸。', tag: '核心', status: '已探索', img: "/assets/story/loc_1.png", color: "#DC2626" },
+  { id: '11', name: '咸阳城', type: '都会', description: '大秦帝都咸阳全貌。', tag: '核心', status: '已探索', img: "/assets/story/loc_1.png", color: "#DC2626" },
+  { id: '12', name: '咸阳宫', type: '皇权', description: '秦王政务与居住的核心宫殿。', tag: '禁地', status: '核心', img: "/assets/story/loc_4.png", color: "#A855F7" },
+  { id: '13', name: '章台宫', type: '权力', description: '始皇帝处理奏章、会见群臣的主要宫殿。', tag: '中心', status: '核心', img: "/assets/story/loc_4.png", color: "#A855F7" },
+  { id: '14', name: '秦律', type: '典制', description: '大秦帝国赖以统治的严苛法律体系。', tag: '纲领', status: '严正', img: "/assets/story/loc_2.png", color: "#3B82F6" },
+  { id: '8', name: '巴邑', type: '边陲', description: '秦蜀交界的小邑，民风淳朴，土地贫瘠。', tag: '边关', status: '已探索', img: "/assets/story/loc_6.png", color: "#A855F7" },
+  { id: '2', name: '廷尉府', type: '政务', description: '秦最高司法与监察官署，负责百官考核、案件审理。', tag: '政务', status: '重要', img: "/assets/story/loc_2.png", color: "#3B82F6" },
+  { id: '3', name: '渭水码头', type: '补给', description: '重要的物资集散地，连接关中与关东的物流命脉。', tag: '补给', status: '重要', img: "/assets/story/loc_3.png", color: "#F97316" },
+  { id: '4', name: '咸阳宫', type: '皇权', description: '大秦帝国皇宫，皇权统治的核心区域。', tag: '禁地', status: '核心', img: "/assets/story/loc_4.png", color: "#A855F7" },
+  { id: '5', name: '上郡大营', type: '要塞', description: '北方边境核心军备中心，抵御匈奴的最高指挥部。', tag: '军事', status: '高危', img: "/assets/story/loc_5.png", color: "#22C55E" },
+  { id: '6', name: '郑国渠', type: '枢纽', description: '战国末年修建的大型水利工程，关中沃野之源。', tag: '民生', status: '已探索', img: "/assets/story/loc_6.png", color: "#EAB308" },
+  { id: '7', name: '函谷关', type: '咽喉', description: '扼守关中门户的战略天险，帝国封锁舆情之关。', tag: '要塞', status: '高危', img: "/assets/story/loc_7.png", color: "#6366F1" },
+];

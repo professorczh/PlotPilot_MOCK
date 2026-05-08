@@ -78,9 +78,9 @@ export default function AnalyticsPanel({ isCollapsed, onToggle, onClose, onSetSi
               { label: '1/4', val: 25 },
               { label: '1/2', val: 50 },
               { label: 'MAX', val: 80 }
-            ].map((btn) => (
+            ].map((btn, idx) => (
               <button
-                key={btn.label}
+                key={`size-btn-${btn.label}-${idx}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   console.log(`[UI] Analytics: Force Size -> ${btn.label} (${btn.val}%)`);
@@ -117,20 +117,20 @@ export default function AnalyticsPanel({ isCollapsed, onToggle, onClose, onSetSi
               <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-tight">
                 <div className="flex items-center gap-1.5 text-emerald-400/80">
                   <div className="w-1 h-1 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]" />
-                  <span>节奏 Rhythm</span>
+                  <span>节奏</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-blue-400/80">
                   <div className="w-1 h-1 rounded-full bg-blue-400 shadow-[0_0_5px_rgba(96,165,250,0.5)]" />
-                  <span>悬念 Suspense</span>
+                  <span>悬念</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-brand-red/80">
                   <div className="w-1 h-1 rounded-full bg-brand-red shadow-[0_0_5px_rgba(220,38,38,0.5)]" />
-                  <span>冲突 Conflict</span>
+                  <span>冲突</span>
                 </div>
               </div>
             </div>
             <button className="text-[10px] font-mono font-bold uppercase bg-brand-red/10 text-brand-red px-3 py-1 rounded-lg border border-brand-red/30 hover:bg-brand-red/20 transition-all hover:scale-105 active:scale-95">
-              重新演算 RE-CALCULATE
+              重新演算
             </button>
           </div>
 
@@ -141,7 +141,7 @@ export default function AnalyticsPanel({ isCollapsed, onToggle, onClose, onSetSi
             {dimensions.width > 0 && dimensions.height > 0 && (
               <div className="absolute inset-0">
                 <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
-                     style={{ backgroundImage: 'radial-gradient(#DC2626 0.5px, transparent 0.5px)', backgroundSize: '20px 20px' }} />
+                     style={{ backgroundImage: `radial-gradient(var(--brand-red) 0.5px, transparent 0.5px)`, backgroundSize: '20px 20px' }} />
                 
                 <AreaChart 
                   width={dimensions.width} 
@@ -151,14 +151,14 @@ export default function AnalyticsPanel({ isCollapsed, onToggle, onClose, onSetSi
                 >
                   <defs>
                     <linearGradient id="colorConflict" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#DC2626" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#DC2626" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="var(--brand-red)" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="var(--brand-red)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--hud-border)" opacity={0.3} vertical={false} />
                   <XAxis 
                     dataKey="name" 
-                    stroke="#737373" 
+                    stroke="var(--text-muted)" 
                     fontSize={11} 
                     tickLine={false} 
                     axisLine={false}

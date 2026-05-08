@@ -14,14 +14,17 @@ interface MessageTraceProps {
   isThinking?: boolean;
   isCompleted?: boolean;
   className?: string;
+  theme?: 'ink' | 'paper' | 'classic';
 }
 
 export const MessageTrace: React.FC<MessageTraceProps> = ({ 
   steps, 
   isThinking, 
   isCompleted,
-  className 
+  className,
+  theme = 'ink'
 }) => {
+  const isDarkMode = theme === 'ink';
   const [isExpanded, setIsExpanded] = useState(false);
   const completedCount = steps.filter(s => s.status === 'completed').length;
   const totalCount = steps.length;
@@ -29,14 +32,13 @@ export const MessageTrace: React.FC<MessageTraceProps> = ({
   const isActivelyWorking = isThinking || (completedCount < totalCount);
 
   return (
-    <div className={cn("w-full transition-all duration-300", className)}>
+    <div className={cn("w-full", className)}>
       <motion.div
-        layout
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          "flex items-center justify-between px-3 py-1.5 rounded-lg cursor-pointer transition-colors",
-          "bg-white/5 hover:bg-white/10 border border-white/5",
-          isExpanded ? "mb-0.5 rounded-lg border-b shadow-lg" : "rounded-lg"
+          "flex items-center justify-between px-3 py-1.5 rounded-lg cursor-pointer transition-colors border",
+          isDarkMode ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-black/5 border-black/5 hover:bg-black/10",
+          isExpanded && "rounded-b-none border-b-transparent shadow-lg"
         )}
       >
         <div className="flex items-center gap-2">
@@ -73,11 +75,14 @@ export const MessageTrace: React.FC<MessageTraceProps> = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-white/5 border border-white/5 border-t-0 rounded-b-lg"
+            className={cn(
+              "overflow-hidden border border-t-0 rounded-b-lg",
+              isDarkMode ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"
+            )}
           >
             <div className="p-2 space-y-1">
-              {steps.map((step) => (
-                <div key={step.id} className="flex items-center gap-2 px-1 py-0.5">
+              {steps.map((step, idx) => (
+                <div key={`trace-step-msg-${step.id}-${idx}`} className="flex items-center gap-2 px-1 py-0.5">
                   {step.status === 'completed' ? (
                     <CheckCircle2 className="w-3 h-3 text-emerald-500/60" />
                   ) : step.status === 'thinking' ? (

@@ -4,11 +4,13 @@ import {
   CheckCircle2, Loader2, 
   Users, Map as MapIcon, Zap, Activity, 
   ArrowRight, Database, Globe, Shield, Coins, Scale, Mountain, Wind, Flame, Sparkles,
-  ChevronRight, MessageSquare, Send, X, Bot, Plus
+  ChevronRight, MessageSquare, Send, X, Bot, Plus, Network, Box
 } from 'lucide-react';
 
+import { cn } from '../lib/utils';
 import { AgentMessage } from '../types';
 import AgentCoreView from './AgentCoreView';
+import RelationshipGraph from './RelationshipGraph';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -17,7 +19,8 @@ interface OnboardingProps {
   isMockLoadingEnabled?: boolean;
   messages: AgentMessage[];
   onSendMessage: (text: string) => void;
-  onAddAIMessage: (text: string, context?: 'world' | 'character' | 'map' | 'plot' | 'general') => void;
+  onAddAIMessage: (text: string, context?: 'world' | 'character' | 'map' | 'plot' | 'general', isSystem?: boolean) => void;
+  theme: 'ink' | 'paper' | 'classic';
 }
 
 type StepStatus = 'thinking' | 'reviewing' | 'completed';
@@ -29,8 +32,10 @@ export default function Onboarding({
   isMockLoadingEnabled = true,
   messages,
   onSendMessage,
-  onAddAIMessage
+  onAddAIMessage,
+  theme
 }: OnboardingProps) {
+  const isDarkMode = theme === 'ink';
   const [currentStep, setCurrentStep] = useState(1);
   const [status, setStatus] = useState<StepStatus>('thinking');
   const [thinkingText, setThinkingText] = useState('');
@@ -72,13 +77,21 @@ export default function Onboarding({
         '故事线': 'plot'
       };
       
+      const stepIntros: Record<string, string> = {
+        '人物': '核心博弈实体映射完成\n基于信息流协议，已检索到 7 处关键因果节点',
+        '地图': '核心逻辑节点同步完成\n已完成大秦都城咸阳及周边战略节点的实境渲染',
+        '故事线': '剧情主轴推演就绪\n基于当前人物关系，已生成 3 条高概率逻辑分支',
+        '情节弧': '时空曲率修正完成\n正在锚定章节起承转合的压力张力分布曲线'
+      };
+      
       setCurrentStep(nextStep);
       setStatus('thinking');
       
-      // Trigger AI thinking for the NEXT step specifically
+      // Trigger AI thinking for the NEXT step specifically with PROTOCOL style
       onAddAIMessage(
-        `已完成“${nextStepName}”的初步生成。你可以审阅左侧的设定项。如果你对某个部分不满意，或者想针对某些细节进行更深度的推演，可以直接咨询我。`,
-        contextMap[nextStepName] || 'general'
+        stepIntros[nextStepName] || `正在加载“${nextStepName}”...`,
+        contextMap[nextStepName] || 'general',
+        true
       );
     } else {
       onComplete();
@@ -136,7 +149,7 @@ export default function Onboarding({
               />
 
               {steps.map((step) => (
-                <div key={step.id} className="flex flex-col items-center gap-1">
+                <div key={`onboarding-step-indicator-${step.id}`} className="flex flex-col items-center gap-1">
                   <div className={`
                     w-7 h-7 rounded-full flex items-center justify-center border transition-all duration-500 text-[10px]
                     ${currentStep > step.id ? 'bg-brand-red border-brand-red text-white' : 
@@ -163,6 +176,7 @@ export default function Onboarding({
                 isAgentOpen={isAgentOpen}
                 progress={activeIndex > 0 ? `${activeIndex} / ${totalSteps}` : undefined}
                 isFinalizing={isFinalizing}
+                isDarkMode={isDarkMode}
               />
             ) : (
               <motion.div
@@ -173,7 +187,7 @@ export default function Onboarding({
                 transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
                 className="min-h-full flex flex-col"
               >
-                {renderStepContent(currentStep, selectedStoryline, setSelectedStoryline)}
+                {renderStepContent(currentStep, selectedStoryline, setSelectedStoryline, isDarkMode)}
               </motion.div>
             )}
           </AnimatePresence>
@@ -226,7 +240,7 @@ export default function Onboarding({
               messages={messages}
               onSendMessage={onSendMessage}
               onClose={() => setIsAgentOpen(false)}
-              theme="paper" // Onboarding currently has its own background logic
+              theme={theme} 
               isMockLoadingEnabled={isMockLoadingEnabled}
             />
           </motion.aside>
@@ -250,7 +264,34 @@ export default function Onboarding({
 
 // --- Sub-components ---
 
-function ThinkingState({ text, step, progress, isFinalizing }: { text: string; step: number; isAgentOpen: boolean; progress?: string; isFinalizing?: boolean; key?: string }) {
+function SmartImage({ src, fallback, alt, className, ...props }: any) {
+  const [currentSrc, setCurrentSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (!hasError) {
+      setCurrentSrc(fallback);
+      setHasError(true);
+    }
+  };
+
+  useEffect(() => {
+    setCurrentSrc(src);
+    setHasError(false);
+  }, [src]);
+
+  return (
+    <img 
+      src={currentSrc} 
+      alt={alt} 
+      className={className} 
+      onError={handleError} 
+      {...props} 
+    />
+  );
+}
+
+function ThinkingState({ text, step, progress, isFinalizing, isDarkMode }: { text: string; step: number; isAgentOpen: boolean; progress?: string; isFinalizing?: boolean; key?: string; isDarkMode: boolean }) {
   const icons = [Database, Users, MapIcon, Zap, Activity];
   const Icon = icons[step - 1];
 
@@ -266,7 +307,10 @@ function ThinkingState({ text, step, progress, isFinalizing }: { text: string; s
         <motion.div 
           animate={{ rotate: isFinalizing ? 0 : 360 }}
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          className={`w-20 h-20 rounded-full border-t border-brand-red/30 border-r border-brand-red/10 ${isFinalizing ? 'border-green-500/30 ring-4 ring-green-500/10' : ''}`}
+          className={cn(
+            "w-20 h-20 rounded-full border-t border-brand-red/30 border-r border-brand-red/10",
+            isFinalizing && 'border-green-500/30 ring-4 ring-green-500/10'
+          )}
         />
         <div className="absolute inset-0 flex items-center justify-center">
           {isFinalizing ? (
@@ -306,9 +350,6 @@ function ThinkingState({ text, step, progress, isFinalizing }: { text: string; s
                 </span>
                 {progress && <span className="opacity-30 ml-2 font-mono text-[10px]">[{progress}]</span>}
               </div>
-              <div className="w-full text-[11px] text-muted-text/70 !font-sans font-medium tracking-[0.1em] mt-1.5 leading-relaxed">
-                {isFinalizing ? '深度推演引擎已完成底层架构映射，请审阅核心设定。' : '逻辑正在与墨枢灵感 Agent 实时对撞'}
-              </div>
             </div>
           </div>
         </div>
@@ -317,32 +358,22 @@ function ThinkingState({ text, step, progress, isFinalizing }: { text: string; s
   );
 }
 
-function renderStepContent(step: number, selectedStoryline: number | null, setSelectedStoryline: (id: number) => void) {
+function renderStepContent(step: number, selectedStoryline: number | null, setSelectedStoryline: (id: number) => void, isDarkMode: boolean) {
   switch (step) {
-    case 1: return <WorldviewContent />;
-    case 2: return <CharactersContent />;
-    case 3: return <MapContent />;
-    case 4: return <StorylineContent selected={selectedStoryline} onSelect={setSelectedStoryline} />;
-    case 5: return <PlotArcContent />;
+    case 1: return <WorldviewContent isDarkMode={isDarkMode} />;
+    case 2: return <CharactersContent isDarkMode={isDarkMode} />;
+    case 3: return <MapContent isDarkMode={isDarkMode} />;
+    case 4: return <StorylineContent selected={selectedStoryline} onSelect={setSelectedStoryline} isDarkMode={isDarkMode} />;
+    case 5: return <PlotArcContent isDarkMode={isDarkMode} />;
     default: return null;
   }
 }
 
-// --- Content Components (Based on Screenshots) ---
+// --- Content Components ---
 
-function WorldviewContent() {
+function WorldviewContent({ isDarkMode }: { isDarkMode: boolean }) {
   return (
-    <div className="flex flex-col space-y-3 w-full py-1 flex-1 min-h-0">
-      <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-2.5 flex items-center gap-6 max-w-3xl mx-auto shadow-[0_0_20px_rgba(34,197,94,0.1)] shrink-0">
-        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-          <CheckCircle2 className="w-5 h-5 text-green-500" />
-        </div>
-        <div>
-          <h3 className="text-lg font-sans font-bold text-green-500 mb-0.5 tracking-[0.2em] uppercase">世界观解析协议已就绪</h3>
-          <p className="text-muted-text text-sm font-sans">深度推演引擎已完成底层架构映射，请审阅核心设定。</p>
-        </div>
-      </div>
-
+    <div className="flex flex-col space-y-3 w-full py-4 flex-1 min-h-0">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1 overflow-hidden">
         <Section title="核心法则" icon={Zap} items={[
           { label: "力量体系", icon: Flame, val: "无超自然力量，核心优势为重生者携带的现代公关、危机管理、项目管理、舆情引导思维，通过适配秦代的竹简、斥候、工匠体系实现降维打击。" },
@@ -351,319 +382,432 @@ function WorldviewContent() {
         ]} />
         
         <Section title="地理生态" icon={MapIcon} items={[
-          { label: "疆域版图", icon: Mountain, val: "覆盖战国末期至秦统一后的疆域，北至河套、辽东郡，南至象郡、桂林郡，西至临洮，中原腹地有关中平原、关东六国旧地。" },
-          { label: "天候系统", icon: Wind, val: "整体为温带季风气候，关中、中原冬季寒冷干燥，夏季炎热多雨；南方百越地区湿热多雨；北方草原地区昼夜温差大。" },
-          { label: "自然馈赠", icon: Globe, val: "关中、蜀地为核心粮食产区，盛产粟、稻；河东、蜀地有丰富的盐矿与铁矿；燕齐地区盛产海盐。" }
+          { label: "地缘政治", icon: Globe, val: "秦统一六国后的关中平原为轴心，北抵长城，南至岭南，西起陇西，东达海滨。各地文化隔阂巨大，方言与习俗各异。" },
+          { label: "战略节点", icon: Mountain, val: "函谷关、咸阳宫、上郡大营。这些地点不仅是物理枢纽，更是舆情传播与权力博弈的咽喉点。" },
+          { label: "气候环境", icon: Wind, val: "关中气候干燥，渭河系统是命脉。环境对军队机动与补给运输有着决定性影响。" }
         ]} />
 
-        <Section title="社会结构" icon={Database} items={[
-          { label: "权力中枢", icon: Shield, val: "秦代中央集权制，三公九卿制与郡县制并行，统一后推行书同文、车同轨、统一度量衡，前期朝堂分为宗室派、军功派、文臣派等势力。" },
-          { label: "经济命脉", icon: Coins, val: "以小农经济为核心，推行重农抑商政策，盐铁官营，统一货币为半两钱，主角通过现代市场营销思维推广统一农具。" },
-          { label: "阶级秩序", icon: Users, val: "沿用秦代二十等爵制，以军功、农耕贡献为主要晋升标准，同时引入现代绩效考核逻辑调整爵位授予规则。" }
+        <Section title="社会契约" icon={Shield} items={[
+          { label: "权力结构", icon: Database, val: "郡县制下的中央集权，法家思想绝对统治。核心权力在于对信息的解释权与对诏书、虎符的物理掌控。" },
+          { label: "利益群体", icon: Users, val: "老秦人军功集团、关东六国旧贵族、儒生士子、商贾阶层。各方利益错综复杂，是舆情引导、统一战线的主要受众。" },
+          { label: "价值取向", icon: Coins, val: "崇尚武功、严刑峻法、耕战合一。重生者需在维持国家运行的前提下，逐步引入契约、共赢与现代人文管理思维。" }
         ]} />
       </div>
     </div>
   );
 }
 
-function CharactersContent() {
+function CharactersContent({ isDarkMode }: { isDarkMode: boolean }) {
+  const [activeView, setActiveView] = useState<'graph' | 'cards'>('cards');
+
   const chars = [
-    { name: "赢扶苏", role: "主角", img: "https://picsum.photos/seed/chinese-nobleman-portrait/600/800", desc: "现代顶尖公关公司CEO重生为秦公子扶苏，性格冷静务实、擅于舆情引导与资源整合，目标是通过现代管理、公关思维扭转秦二世而亡的结局。" },
-    { name: "张苍", role: "导师", img: "https://picsum.photos/seed/chinese-scholar-ancient/600/800", desc: "原秦廷御史，精通秦代典制与律法，性格严谨刻板、恪守官规，目标是辅佐扶苏推行合规新政，纠正秦政的严苛弊端。" },
-    { name: "赵高", role: "对手", img: "https://picsum.photos/seed/chinese-eunuch-villain/600/800", desc: "秦廷中车府令，擅于揣摩上意、玩弄权术，性格阴险狡诈、野心勃勃，目标是掌控大秦朝政，扶持傀儡皇帝以专权。" },
-    { name: "王离", role: "配角", img: "https://picsum.photos/seed/chinese-general-armor/600/800", desc: "秦大将军王翦之孙，承袭武成侯爵位，性格刚直勇猛、重视军功秩序，目标是维护军功集团的二十等爵制利益。" },
-    { name: "郑国", role: "配角", img: "https://picsum.photos/seed/ancient-dam-construction/600/800", desc: "原韩国水工，受命主持修建郑国渠，性格专注务实、不善言辞 but 精通水利工程，目标是完成郑国渠的后续修缮与推广。" }
+    { name: "赢扶苏", role: "主角", weight: "壹级 · 枢密", resonance: "S级 · 极致", threat: "陆级 · 潜伏", img: "/assets/story/char_1.png", fallback: "https://picsum.photos/seed/chinese-nobleman-portrait/600/800", desc: "现代顶尖公关公司CEO重生为秦公子扶苏，擅于舆情引导与资源整合，目标是通过现代管理思维扭转秦二世而亡的结局。" },
+    { name: "张苍", role: "导师", weight: "贰级 · 律令", resonance: "A级 · 高频", threat: "叁级 · 稳定", img: "/assets/story/char_2.png", fallback: "https://picsum.photos/seed/chinese-scholar-ancient/600/800", desc: "秦代典制专家，精通律法。目标是辅佐扶苏推行合规新政，在大秦法律体系中寻找博弈空间。" },
+    { name: "赵高", role: "对手", weight: "壹级 · 阴影", resonance: "B级 · 混沌", threat: "玖级 · 极危", img: "/assets/story/char_3.png", fallback: "https://picsum.photos/seed/chinese-eunuch-villain/600/800", desc: "秦廷权力操盘手，擅于玩弄权术。目标是掌控帝国舆情通道，扶持傀儡以专权。" },
+    { name: "蒙恬", role: "盟友", weight: "壹级 ·执剑", resonance: "A级 · 全域", threat: "伍级 · 锋芒", img: "/assets/story/char_4.png", fallback: "https://picsum.photos/seed/terracotta-general/600/800", desc: "大秦名将，统领三十万大军。是主角重整帝国武力基石的核心支柱，忠诚且刚毅。" },
+    { name: "李斯", role: "中立者", weight: "壹级 · 辅弼", resonance: "A级 · 均衡", threat: "柒级 · 多变", img: "/assets/story/char_5.png", fallback: "https://picsum.photos/seed/chinese-chancellor/600/800", desc: "法家代表人物，极度功利。是主角进行政治公关布局的关键争取对象。" },
+    { name: "王离", role: "配角", weight: "叁级 · 锋刃", resonance: "B+ 局部", threat: "肆级 · 正直", img: "/assets/story/char_6.png", fallback: "https://picsum.photos/seed/chinese-general-armor/600/800", desc: "王翦之孙，代表军功集团的核心利益，在军事改革中持观望态度。" },
+    { name: "郑国", role: "配角", weight: "肆级 · 工造", resonance: "A+ 根基", threat: "贰级 · 沉稳", img: "/assets/story/char_7.png", fallback: "https://picsum.photos/seed/ancient-dam-construction/600/800", desc: "水利专家，主持修建郑国渠。是扶苏改善民生、获取社会共鸣的基础技术保障。" }
   ];
 
   return (
-    <div className="flex flex-col h-full py-0 overflow-hidden min-h-0">
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="text-center max-w-2xl mx-auto shrink-0 mb-4"
-      >
-        <h3 className="text-xl font-sans font-bold text-text-main mb-1 tracking-[0.2em] uppercase">主要角色生成完成</h3>
-        <p className="text-[10px] tracking-[0.3em] uppercase opacity-60">基于世界观设定，AI 正在生成 3-5 个主要角色...</p>
-      </motion.div>
-
-      <div className="flex-1 flex flex-row gap-6 w-full max-w-[1440px] mx-auto px-4 min-h-0 overflow-hidden">
-        {/* Left: Fixed Sidebar Container */}
-        <div className="w-48 shrink-0 flex flex-col min-h-0 pb-12">
-          <div className="flex-1 bg-panel-bg/20 border border-hud-border/30 rounded-3xl backdrop-blur-md border-dashed flex flex-col items-center justify-center p-4 relative group hover:border-brand-red/30 transition-all duration-500">
-            <div className="absolute top-4 left-4 px-2 py-0.5 border border-hud-border/50 rounded text-[9px] font-sans text-muted-text/50 uppercase tracking-tighter">
-              Char Slot
-            </div>
-            <div className="w-12 h-12 rounded-full bg-hud-border/10 flex items-center justify-center mb-4">
-              <Plus className="w-6 h-6 text-muted-text/30 group-hover:text-brand-red/50 transition-colors" />
-            </div>
-            <span className="text-[10px] font-sans font-bold text-muted-text/30 uppercase tracking-[0.2em] text-center leading-relaxed">
-              待加载<br/>角色索引
-            </span>
-            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-brand-red/0 group-hover:border-brand-red/40 transition-colors" />
-            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-brand-red/0 group-hover:border-brand-red/40 transition-colors" />
-          </div>
-        </div>
-
-        {/* Vertical Scrollable Gallery */}
-        <div 
-          className="flex-1 overflow-y-auto overflow-x-hidden px-4 scrollbar-none scroll-smooth min-h-0 min-w-0"
-        >
-          <div className="w-full max-w-5xl mx-auto py-12 space-y-24">
-          {chars.map((c, idx) => (
-            <Fragment key={c.name}>
-              <motion.div 
-                initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ 
-                  duration: 0.8, 
-                  delay: idx * 0.1,
-                  ease: [0.23, 1, 0.32, 1] 
-                }}
-                className="w-full aspect-video bg-panel-bg/40 border border-hud-border/30 rounded-3xl overflow-hidden group hover:border-brand-red/50 transition-all duration-500 shadow-2xl flex relative select-none"
-              >
-                {/* Left: Image (Vertical 3:4 Ratio) */}
-                <div className="w-[42%] h-full relative overflow-hidden pointer-events-none border-r border-hud-border/20 shrink-0">
-                  <img 
-                    src={c.img} 
-                    alt={c.name} 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.8] group-hover:grayscale-0 sepia-[0.2] group-hover:sepia-0"
-                    referrerPolicy="no-referrer"
-                  />
-                  {/* Scanning Animation Effect */}
-                  <motion.div 
-                    initial={{ top: "-100%" }}
-                    whileInView={{ top: "100%" }}
-                    transition={{ duration: 1.5, delay: 0.5 + (idx * 0.1), ease: "linear", repeat: 0 }}
-                    className="absolute inset-x-0 h-1 bg-brand-red shadow-[0_0_15px_#DC2626] z-10 opacity-60"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-panel-bg via-transparent to-transparent opacity-80" />
-                  <div className="absolute top-6 left-6">
-                    <span className="text-xs font-sans font-bold text-brand-red bg-brand-red/10 border border-brand-red/30 px-3 py-1 rounded-lg uppercase tracking-[0.2em] backdrop-blur-md">{c.role}</span>
-                  </div>
-                </div>
-
-                {/* Right: Content */}
-                <div className="flex-1 p-8 lg:p-14 flex flex-col pointer-events-none relative justify-center">
-                  <div className="mb-8">
-                    <motion.h4 
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 + (idx * 0.1) }}
-                      className="text-4xl lg:text-5xl font-sans font-bold text-text-main mb-3 uppercase tracking-widest group-hover:text-brand-red transition-colors"
-                    >
-                      {c.name}
-                    </motion.h4>
-                    <div className="flex gap-4 items-center">
-                      <div className="flex gap-2">
-                        <span className="text-xs font-mono text-brand-red/60 uppercase tracking-tighter">身份已确认</span>
-                        <div className="w-1 h-1 rounded-full bg-brand-red/40 self-center" />
-                        <span className="text-xs font-mono text-muted-text uppercase tracking-tighter">零柒级核心成员</span>
-                      </div>
-                      <div className="h-px w-12 bg-hud-border/30" />
-                      <span className="text-xs font-mono text-muted-text/40">存档编号: 墨-{idx+2024}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 max-h-[40%] overflow-hidden flex flex-col justify-center">
-                    <div className="text-xs font-sans text-muted-text uppercase tracking-[0.3em] mb-4 opacity-40">主要事迹及人物侧写</div>
-                    <p className="text-text-main/80 text-lg lg:text-xl leading-relaxed font-sans group-hover:text-text-main transition-colors duration-700 max-w-2xl line-clamp-4">{c.desc}</p>
-                  </div>
-
-                  <div className="mt-8 pt-8 border-t border-hud-border/10 flex items-center justify-between shrink-0">
-                    <div className="flex gap-16">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-mono text-muted-text/50 uppercase tracking-widest">社会影响力</span>
-                        <span className="text-xl font-sans font-bold text-text-main tracking-widest">A+ 同步</span>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-mono text-muted-text/50 uppercase tracking-widest">系统危险等级</span>
-                        <span className="text-xl font-sans font-bold text-brand-red tracking-widest">陆级 警戒</span>
-                      </div>
-                    </div>
-                    <div className="w-14 h-14 rounded-full border border-hud-border/30 flex items-center justify-center relative overflow-hidden group-hover:border-brand-red/50 transition-colors">
-                      <div className="absolute inset-0 bg-brand-red/5 animate-pulse" />
-                      <div className="w-2 h-2 rounded-full bg-brand-red animate-ping" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Grid Background Effect */}
-                <div className="absolute inset-0 pointer-events-none opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-700 bg-[radial-gradient(#DC2626_1px,transparent_1px)] [background-size:20px_20px]" />
-                
-                {/* Bottom Decorative Line */}
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-brand-red/20 via-brand-red to-brand-red/20 scale-x-0 group-hover:scale-x-100 transition-transform origin-center duration-1000" />
-              </motion.div>
-            </Fragment>
-          ))}
+    <div className="flex flex-col h-full py-4 lg:py-6 overflow-hidden min-h-0">
+      {/* Header Info */}
+      <div className="flex items-center justify-between px-4 mb-6 shrink-0 h-10">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-xl font-display font-bold text-text-main tracking-widest uppercase">核心博弈实体映射完成</h3>
+          <p className="text-[9px] font-display tracking-[0.3em] uppercase opacity-40">已检索到 7 处关键因果节点</p>
         </div>
       </div>
+
+      <div className="flex-1 w-full max-w-[1440px] mx-auto min-h-0 overflow-hidden relative">
+        {/* Float Content Mode Toggle */}
+        <div className="absolute top-6 right-6 z-50 flex bg-panel-bg/60 backdrop-blur-md border border-hud-border/20 rounded-full p-1 shadow-2xl select-none">
+          <button 
+            onClick={() => setActiveView('graph')}
+            className={cn(
+              "px-4 py-1.5 flex items-center gap-2 rounded-full text-[10px] font-display font-bold uppercase tracking-widest transition-all duration-300",
+              activeView === 'graph' ? "bg-brand-red text-white shadow-lg shadow-brand-red/20" : "text-muted-text hover:text-text-main"
+            )}
+          >
+            <Network className="w-3 h-3" />
+            画布模式
+          </button>
+          <button 
+            onClick={() => setActiveView('cards')}
+            className={cn(
+              "px-4 py-1.5 flex items-center gap-2 rounded-full text-[10px] font-display font-bold uppercase tracking-widest transition-all duration-300",
+              activeView === 'cards' ? "bg-brand-red text-white shadow-lg shadow-brand-red/20" : "text-muted-text hover:text-text-main"
+            )}
+          >
+            <Box className="w-3 h-3" />
+            卡片模式
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {activeView === 'graph' ? (
+            <motion.div 
+              key="view-graph"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="w-full h-full pb-12"
+            >
+              <div className="w-full h-full bg-panel-bg/10 border border-hud-border/20 rounded-3xl backdrop-blur-md relative overflow-hidden">
+                <div className="w-full h-full">
+                  <RelationshipGraph theme={isDarkMode ? 'ink' : 'paper'} />
+                </div>
+                
+                {/* HUD Overlay Elements for Graph */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-brand-red animate-pulse" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-brand-red animate-pulse" />
+                
+                <div className="absolute bottom-8 left-8 flex gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#34D399]" />
+                    <span className="text-[10px] font-mono text-muted-text/60 uppercase">核心阵营</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#60A5FA]" />
+                    <span className="text-[10px] font-mono text-muted-text/60 uppercase">权重官署</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#A855F7]" />
+                    <span className="text-[10px] font-mono text-muted-text/60 uppercase">潜伏变数</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="view-cards"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full h-full overflow-y-auto scrollbar-none pb-12"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+                {chars.map((c, idx) => (
+                  <motion.div 
+                    key={`char-card-${c.name}-${idx}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="w-full aspect-[21/9] bg-panel-bg/40 border border-hud-border/30 rounded-3xl overflow-hidden group hover:border-brand-red/50 transition-all duration-500 flex shadow-xl"
+                  >
+                    {/* Compact Image */}
+                    <div className="w-[35%] h-full relative overflow-hidden border-r border-hud-border/20 shrink-0">
+                      <SmartImage 
+                        src={c.img} 
+                        fallback={c.fallback}
+                        alt={c.name} 
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.8] group-hover:grayscale-0"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-panel-bg/60 to-transparent" />
+                      <div className="absolute top-4 left-4">
+                        <span className="text-[9px] font-sans font-bold text-brand-red bg-brand-red/10 border border-brand-red/30 px-2 py-0.5 rounded uppercase tracking-[0.2em] backdrop-blur-md">{c.role}</span>
+                      </div>
+                    </div>
+
+                    {/* Compact Content */}
+                    <div className="flex-1 p-6 flex flex-col justify-center">
+                      <div className="mb-4">
+                        <h4 className="text-3xl font-display font-bold text-text-main mb-1 tracking-widest group-hover:text-brand-red transition-colors uppercase">
+                          {c.name}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                           <span className="text-[10px] font-mono text-muted-text/40 uppercase tracking-widest">位阶:</span>
+                           <span className="text-[10px] font-display font-bold text-brand-red uppercase tracking-[0.1em]">{c.weight}</span>
+                        </div>
+                      </div>
+                      
+                      <p className="text-text-main/70 text-xs leading-relaxed font-sans line-clamp-2 mb-4">{c.desc}</p>
+
+                      <div className="pt-4 border-t border-hud-border/10 flex items-center justify-between">
+                        <div className="flex gap-6">
+                          <div className="flex flex-col">
+                            <span className="text-[8px] font-display text-muted-text/40 uppercase tracking-widest">共鸣</span>
+                            <span className="text-sm font-display font-bold text-text-main tracking-widest">{c.resonance}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[8px] font-display text-muted-text/40 uppercase tracking-widest">威胁</span>
+                            <span className="text-sm font-display font-bold text-brand-red tracking-widest">{c.threat}</span>
+                          </div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full border border-hud-border/30 flex items-center justify-center relative overflow-hidden group-hover:border-brand-red/50 transition-colors">
+                          <div className="w-1.5 h-1.5 rounded-full bg-brand-red animate-ping" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
-  </div>
   );
 }
 
-function MapContent() {
+function MapContent({ isDarkMode }: { isDarkMode: boolean }) {
   const [selectedLoc, setSelectedLoc] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<'map' | 'list'>('map');
 
   const locations = [
-    { name: "大秦都城咸阳", type: "核心枢纽", color: "#DC2626", img: "https://picsum.photos/seed/xianyang/400/400", desc: "秦统一后的核心都城，位于关中平原渭水北岸，分为宫城、外郭官署区与市井商圈。" },
-    { name: "廷尉府", type: "政务官署", color: "#3B82F6", img: "https://picsum.photos/seed/tingwei/400/400", desc: "大秦最高司法与监察官署，负责百官考核、案件审理与舆情稽查。" },
-    { name: "渭水码头", type: "物资补给", color: "#F97316", img: "https://picsum.photos/seed/wharf/400/400", desc: "重要的物资集散地，秦统一后作为漕运枢纽，连接关中与关东，是帝国物流命脉。" },
-    { name: "咸阳宫", type: "皇权中心", color: "#A855F7", img: "https://picsum.photos/seed/palace/400/400", desc: "大秦帝国皇宫，包含前朝朝会区、后宫寝殿与九卿官署附楼，是皇帝与朝臣议事的核心。" },
-    { name: "上郡大营", type: "军事要塞", color: "#22C55E", img: "https://picsum.photos/seed/camp/400/400", desc: "大秦在北方边境的核心军备中心，扶苏与蒙恬统领三十万大军抵御匈奴的最高指挥部。" },
-    { name: "郑国渠", type: "农田水利", color: "#EAB308", img: "https://picsum.photos/seed/canal/400/400", desc: "战国末年修建的大型水利工程，使关中平原成为沃野，为秦国的统一战争提供了坚实的粮食基础。" }
+    { name: "大秦都城咸阳", type: "核心枢纽", color: "#DC2626", icon: Globe, img: "/assets/story/loc_1.png", fallback: "https://picsum.photos/seed/xianyang/400/400", desc: "秦统一后的核心都城，位于关中平原渭水北岸，分为宫城、外郭官署区与市井商圈。" },
+    { name: "廷尉府", type: "政务官署", color: "#3B82F6", icon: Shield, img: "/assets/story/loc_2.png", fallback: "https://picsum.photos/seed/tingwei/400/400", desc: "大秦最高司法与监察官署，负责百官考核、案件审理与舆情稽查。" },
+    { name: "渭水码头", type: "物资补给", color: "#F97316", icon: Wind, img: "/assets/story/loc_3.png", fallback: "https://picsum.photos/seed/wharf/400/400", desc: "重要的物资集散地，秦统一后作为漕运枢纽，连接关中与关东，是帝国物流命脉。" },
+    { name: "咸阳宫", type: "皇权中心", color: "#A855F7", icon: Database, img: "/assets/story/loc_4.png", fallback: "https://picsum.photos/seed/palace/400/400", desc: "大秦帝国皇宫，包含前朝朝会区、后宫寝殿与九卿官署附楼，是皇帝与朝臣议事的核心。" },
+    { name: "上郡大营", type: "军事要塞", color: "#22C55E", icon: Mountain, img: "/assets/story/loc_5.png", fallback: "https://picsum.photos/seed/camp/400/400", desc: "大秦在北方边境的核心军备中心，扶苏与蒙恬统领三十万大军抵御匈奴的最高指挥部。" },
+    { name: "郑国渠", type: "农田水利", color: "#EAB308", icon: Activity, img: "/assets/story/loc_6.png", fallback: "https://picsum.photos/seed/canal/400/400", desc: "战国末年修建的大型水利工程，使关中平原成为沃野，为秦国的统一战争提供了坚实的粮食基础。" },
+    { name: "函谷关", type: "咽喉要塞", color: "#6366F1", icon: Shield, img: "/assets/story/loc_7.png", fallback: "https://picsum.photos/seed/pass/400/400", desc: "扼守关中门户的战略天险，是关东六国入秦的必经之地，也是帝国封锁舆情传播的关键物理关哨。" }
   ];
 
   const currentLoc = locations.find(l => l.name === selectedLoc);
 
   return (
-    <div className="flex flex-col space-y-3 py-1 h-full min-h-0 overflow-hidden">
-      <div className="text-center shrink-0">
-        <h3 className="text-xl font-sans font-bold text-text-main mb-1 tracking-[0.2em] uppercase">大秦都城咸阳</h3>
-        <p className="text-muted-text text-[10px] tracking-widest uppercase opacity-60">地点分布预览（点击右侧卡片查看详情实景）</p>
+    <div className="flex flex-col h-full py-4 lg:py-6 overflow-hidden min-h-0">
+      {/* Header Info */}
+      <div className="flex items-center justify-between px-4 mb-6 shrink-0 h-10">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-xl font-display font-bold text-text-main tracking-widest uppercase">核心逻辑节点同步完成</h3>
+          <p className="text-[9px] font-display tracking-[0.3em] uppercase opacity-40">已完成大秦都城咸阳及周边战略节点的实境渲染</p>
+        </div>
       </div>
-      
-      {/* Dual Pane Layout */}
-      <div className="grid lg:grid-cols-3 gap-6 flex-1 overflow-hidden min-h-0 items-stretch">
-        {/* Left: 16:9 Map View */}
-        <div className="lg:col-span-2 flex flex-col justify-center min-h-0 relative">
-          <div className="bg-panel-bg/20 border border-hud-border/30 rounded-2xl p-4 lg:p-6 aspect-video relative overflow-hidden w-full shadow-2xl flex flex-col">
-            <div className="flex-1 w-full min-h-0">
-              <svg className="w-full h-full" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                {/* Connections */}
-                <g stroke="currentColor" strokeWidth="0.5" className="text-hud-border/40">
-                  <line x1="400" y1="100" x2="250" y2="200" />
-                  <line x1="400" y1="100" x2="550" y2="200" />
-                  <line x1="400" y1="100" x2="400" y2="350" />
-                  <line x1="250" y1="200" x2="150" y2="300" />
-                  <line x1="550" y1="200" x2="650" y2="300" />
-                </g>
-                {/* Nodes */}
-                <circle cx="400" cy="100" r={selectedLoc === "大秦都城咸阳" ? 15 : 10} className="fill-brand-red transition-all duration-300" filter="url(#glow)" />
-                <circle cx="250" cy="200" r={selectedLoc === "廷尉府" ? 12 : 8} className="fill-blue-500 transition-all duration-300" />
-                <circle cx="550" cy="200" r={selectedLoc === "渭水码头" ? 12 : 8} className="fill-orange-500 transition-all duration-300" />
-                <circle cx="400" cy="350" r={selectedLoc === "咸阳宫" ? 12 : 8} className="fill-purple-500 transition-all duration-300" />
-                <circle cx="150" cy="300" r={selectedLoc === "上郡大营" ? 12 : 8} className="fill-green-500 transition-all duration-300" />
-                <circle cx="650" cy="300" r={selectedLoc === "郑国渠" ? 12 : 8} className="fill-yellow-500 transition-all duration-300" />
-                
-                {/* Labels */}
-                <text x="400" y="75" textAnchor="middle" className="fill-text-main text-[12px] font-sans font-bold uppercase tracking-widest">中央枢纽：咸阳</text>
-                <text x="250" y="180" textAnchor="middle" className="fill-muted-text text-[10px]">廷尉府</text>
-                <text x="550" y="180" textAnchor="middle" className="fill-muted-text text-[10px]">渭水码头</text>
-                <text x="400" y="380" textAnchor="middle" className="fill-muted-text text-[10px]">咸阳宫</text>
-                <text x="150" y="330" textAnchor="middle" className="fill-muted-text text-[10px]">上郡大营</text>
-                <text x="650" y="330" textAnchor="middle" className="fill-muted-text text-[10px]">郑国渠</text>
-              </svg>
-            </div>
-            
-            {/* Map Decorative Elements */}
-            <div className="absolute bottom-4 left-6 flex items-center gap-4 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-brand-red" />
-                <span className="text-xs font-mono text-muted-text uppercase">核心</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-xs font-mono text-muted-text uppercase">政务</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-orange-500" />
-                <span className="text-xs font-mono text-muted-text uppercase">补给</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Location Preview Popup */}
-          <AnimatePresence>
-            {selectedLoc && currentLoc && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="absolute inset-0 z-20 flex items-center justify-center p-8 pointer-events-none"
-              >
-                <div className="w-full aspect-video bg-app-bg/90 border-2 border-brand-red rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.3)] pointer-events-auto relative group">
-                  <img src={currentLoc.img.replace('400/400', '1920/1080')} alt={currentLoc.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-app-bg via-transparent to-transparent" />
-                  
-                  {/* Info Overlay */}
-                  <div className="absolute bottom-6 left-8 right-8">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-2xl font-sans font-bold text-text-main uppercase tracking-widest">{currentLoc.name}</h4>
-                      <span className="px-3 py-1 rounded text-[10px] font-bold tracking-widest text-white" style={{ backgroundColor: currentLoc.color }}>{currentLoc.type}</span>
-                    </div>
-                    <p className="text-muted-text text-xs max-w-xl leading-relaxed">{currentLoc.desc}</p>
-                  </div>
-
-                  {/* Close Button */}
-                  <button 
-                    onClick={() => setSelectedLoc(null)}
-                    className="absolute top-6 right-6 w-10 h-10 bg-black/50 hover:bg-brand-red transition-colors rounded-full flex items-center justify-center backdrop-blur-md border border-white/20"
-                  >
-                    <span className="text-white text-xl">×</span>
-                  </button>
-                </div>
-              </motion.div>
+      <div className="flex-1 w-full max-w-[1440px] mx-auto min-h-0 overflow-hidden relative">
+        {/* Float Content Mode Toggle */}
+        <div className="absolute top-6 right-6 z-50 flex bg-panel-bg/60 backdrop-blur-md border border-hud-border/20 rounded-full p-1 shadow-2xl select-none">
+          <button 
+            onClick={() => setActiveView('map')}
+            className={cn(
+              "px-4 py-1.5 flex items-center gap-2 rounded-full text-[10px] font-display font-bold uppercase tracking-widest transition-all duration-300",
+              activeView === 'map' ? "bg-brand-red text-white shadow-lg shadow-brand-red/20" : "text-muted-text hover:text-text-main"
             )}
-          </AnimatePresence>
+          >
+            <Network className="w-3 h-3" />
+            画布模式
+          </button>
+          <button 
+            onClick={() => setActiveView('list')}
+            className={cn(
+              "px-4 py-1.5 flex items-center gap-2 rounded-full text-[10px] font-display font-bold uppercase tracking-widest transition-all duration-300",
+              activeView === 'list' ? "bg-brand-red text-white shadow-lg shadow-brand-red/20" : "text-muted-text hover:text-text-main"
+            )}
+          >
+            <Box className="w-3 h-3" />
+            卡片模式
+          </button>
         </div>
 
-        {/* Right: Scrollable Location List */}
-        <div className="lg:col-span-1 flex flex-col min-h-0 bg-panel-bg/10 rounded-2xl border border-hud-border/20 overflow-hidden shadow-2xl">
-          <div className="p-4 border-b border-hud-border/20 bg-hud-border/5 shrink-0 flex items-center justify-between">
-            <h4 className="text-xs font-sans font-bold tracking-[0.2em] text-muted-text uppercase">关键地点索引</h4>
-            <span className="text-xs font-mono text-muted-text opacity-40">{locations.length} 个节点</span>
-          </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
-            {locations.map((loc, idx) => (
-              <motion.div
-                key={loc.name}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-              >
-                <LocationItem 
-                  {...loc} 
-                  isSelected={selectedLoc === loc.name}
-                  onClick={() => setSelectedLoc(loc.name === selectedLoc ? null : loc.name)}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <AnimatePresence mode="wait">
+          {activeView === 'map' ? (
+            <motion.div 
+              key="view-map-main"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="w-full h-full pb-12 flex flex-col justify-center relative"
+            >
+              <div className="bg-panel-bg/20 border border-hud-border/30 rounded-3xl p-6 lg:p-10 aspect-video relative overflow-hidden w-full shadow-2xl flex flex-col backdrop-blur-xl">
+                <div className="flex-1 w-full min-h-0">
+                  <svg className="w-full h-full" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <filter id="glow-map">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <g stroke="currentColor" strokeWidth="0.5" className="text-hud-border/40">
+                      <line x1="400" y1="100" x2="250" y2="200" />
+                      <line x1="400" y1="100" x2="550" y2="200" />
+                      <line x1="400" y1="100" x2="400" y2="350" />
+                      <line x1="250" y1="200" x2="150" y2="300" />
+                      <line x1="550" y1="200" x2="650" y2="300" />
+                      <line x1="650" y1="300" x2="720" y2="200" />
+                      <line x1="400" y1="100" x2="720" y2="200" />
+                    </g>
+                    {locations.map((loc, idx) => {
+                      const coords: Record<string, {x: number, y: number}> = {
+                        "大秦都城咸阳": { x: 400, y: 100 },
+                        "廷尉府": { x: 250, y: 200 },
+                        "渭水码头": { x: 550, y: 200 },
+                        "咸阳宫": { x: 400, y: 350 },
+                        "上郡大营": { x: 150, y: 300 },
+                        "郑国渠": { x: 650, y: 300 },
+                        "函谷关": { x: 720, y: 200 }
+                      };
+                      const pos = coords[loc.name];
+                      if (!pos) return null;
+                      return (
+                        <g 
+                          key={`map-node-${idx}`} 
+                          className="cursor-pointer group"
+                          onClick={() => setSelectedLoc(loc.name)}
+                        >
+                          <circle 
+                            cx={pos.x} cy={pos.y} 
+                            r={selectedLoc === loc.name ? 14 : 8} 
+                            className="transition-all duration-500"
+                            style={{ fill: loc.color }}
+                            filter={selectedLoc === loc.name ? "url(#glow-map)" : ""}
+                          />
+                          <circle 
+                            cx={pos.x} cy={pos.y} 
+                            r={selectedLoc === loc.name ? 22 : 0} 
+                            className="fill-none stroke-current opacity-20 animate-ping"
+                            style={{ color: loc.color }}
+                          />
+                          <text 
+                            x={pos.x} y={pos.y + 25} 
+                            textAnchor="middle" 
+                            className={cn(
+                              "text-[9px] font-sans font-bold uppercase tracking-widest transition-all duration-300",
+                              selectedLoc === loc.name ? "fill-text-main opacity-100" : "fill-muted-text/40 opacity-0 group-hover:opacity-100"
+                            )}
+                          >
+                            {loc.name}
+                          </text>
+                        </g>
+                      )
+                    })}
+                  </svg>
+                </div>
+
+                <div className="absolute top-8 left-8 flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" />
+                    <span className="text-[10px] font-mono text-text-main uppercase tracking-widest">战术层级已加载</span>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-8 right-8 flex items-center gap-6">
+                  {['核心', '政务', '补给'].map((label, i) => (
+                    <div key={label} className="flex items-center gap-2">
+                       <div className={cn("w-2 h-2 rounded-full", i === 0 ? "bg-brand-red" : i === 1 ? "bg-blue-500" : "bg-orange-500")} />
+                       <span className="text-[10px] font-mono text-muted-text/60 uppercase">{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-brand-red/20" />
+                <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-brand-red/20" />
+              </div>
+
+              <AnimatePresence>
+                {selectedLoc && currentLoc && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="absolute inset-0 z-30 flex items-center justify-center p-12 pointer-events-none"
+                  >
+                    <div className="w-full max-w-4xl aspect-video bg-app-bg/95 border border-brand-red/50 rounded-[2rem] overflow-hidden shadow-[0_0_80px_rgba(220,38,38,0.3)] pointer-events-auto relative group">
+                      <SmartImage 
+                        src={currentLoc.img.replace('.png', '_hd.png')} 
+                        fallback={currentLoc.fallback.replace('400/400', '1920/1080')}
+                        alt={currentLoc.name} 
+                        className="w-full h-full object-cover grayscale-[0.4]" 
+                        referrerPolicy="no-referrer" 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-app-bg via-app-bg/40 to-transparent" />
+                      
+                      <div className="absolute bottom-10 left-12 right-12">
+                        <div className="flex items-center gap-4 mb-4">
+                          <span className="p-2 rounded-xl bg-brand-red/10 border border-brand-red/30"><currentLoc.icon className="w-5 h-5 text-brand-red" /></span>
+                          <h4 className="text-4xl font-display font-bold text-text-main uppercase tracking-widest">{currentLoc.name}</h4>
+                          <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.2em] text-white uppercase ml-auto" style={{ backgroundColor: currentLoc.color }}>{currentLoc.type}</span>
+                        </div>
+                        <p className="text-text-main/80 text-base max-w-2xl leading-relaxed font-sans">{currentLoc.desc}</p>
+                      </div>
+
+                      <button 
+                        onClick={() => setSelectedLoc(null)}
+                        className="absolute top-8 right-8 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/10 bg-black/40 text-white hover:bg-brand-red transition-all"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="view-map-list"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full h-full overflow-y-auto scrollbar-none pb-12"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 px-4">
+                {locations.map((loc, idx) => (
+                  <motion.div
+                    key={`map-list-item-${idx}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="bg-panel-bg/40 border border-hud-border/20 rounded-3xl p-5 flex flex-col gap-4 group hover:border-brand-red/50 transition-all duration-500 shadow-xl"
+                  >
+                    <div className="aspect-video rounded-2xl overflow-hidden relative">
+                      <SmartImage 
+                        src={loc.img} 
+                        fallback={loc.fallback}
+                        alt={loc.name} 
+                        className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110" 
+                        referrerPolicy="no-referrer" 
+                      />
+                      <div className="absolute top-3 left-3">
+                        <span className="px-2 py-1 rounded text-[8px] font-bold tracking-[0.2em] text-white uppercase shadow-lg shadow-black/20" style={{ backgroundColor: loc.color }}>{loc.type}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-xl font-display font-bold text-text-main group-hover:text-brand-red transition-colors uppercase tracking-widest">{loc.name}</h4>
+                      <p className="text-muted-text text-[11px] leading-relaxed line-clamp-3">{loc.desc}</p>
+                    </div>
+                    <div className="mt-auto pt-4 border-t border-hud-border/10 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <loc.icon className="w-3.5 h-3.5 text-brand-red/50" />
+                        <span className="text-[9px] font-mono text-muted-text uppercase tracking-widest">战略优先级：高</span>
+                      </div>
+                      <button 
+                        onClick={() => { setSelectedLoc(loc.name); setActiveView('map'); }}
+                        className="text-[9px] font-display font-bold text-brand-red uppercase tracking-widest hover:underline"
+                      >
+                        在地图中定位
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
-function StorylineContent({ selected, onSelect }: { selected: number | null; onSelect: (id: number) => void }) {
+function StorylineContent({ selected, onSelect, isDarkMode }: { selected: number | null; onSelect: (id: number) => void; isDarkMode: boolean }) {
   const lines = [
-    { id: 1, tag: "底层生存逆袭", title: "临尘戍变的翻盘局", img: "https://picsum.photos/seed/border/800/600", desc: "重生为扶苏的赢扶苏抵达南境临尘城，既要平息移民与百越土著的械斗，又要对抗赵高与军功集团的破坏，用现代公关思维扭转危局。" },
-    { id: 2, tag: "高层黑箱博弈", title: "咸阳宫的伪诏迷局", img: "https://picsum.photos/seed/palace/800/600", desc: "扶苏在咸阳宫协助始皇处理政务时，发现赵高篡改军粮调度令、控制始皇病情的黑箱阴谋，必须赶在沙丘之变前揭露真相。" },
-    { id: 3, tag: "舆情异数觉醒", title: "能知民心的异数公子", img: "https://picsum.photos/seed/crowd/800/600", desc: "扶苏发现自己能通过民间歌谣、乡老汇报精准预判舆情走向，这种现代公关的能力被保守派视为妖术，他必须隐藏秘密推行新政。" }
+    { id: 1, tag: "底层生存逆袭", title: "临尘戍变的翻盘局", img: "/assets/story/plot_1.png", fallback: "https://picsum.photos/seed/border/800/600", desc: "重生为扶苏的赢扶苏抵达南境临尘城，既要平息移民与百越土著的械斗，又要对抗赵高与军功集团的破坏，用现代公关思维扭转危局。" },
+    { id: 2, tag: "高层黑箱博弈", title: "咸阳宫的伪诏迷局", img: "/assets/story/plot_2.png", fallback: "https://picsum.photos/seed/palace/800/600", desc: "扶苏在咸阳宫协助始皇处理政务时，发现赵高篡改军粮调度令、控制始皇病情的黑箱阴谋，必须赶在沙丘之变前揭露真相。" },
+    { id: 3, tag: "舆情异数觉醒", title: "能知民心的异数公子", img: "/assets/story/plot_3.png", fallback: "https://picsum.photos/seed/crowd/800/600", desc: "扶苏发现自己能通过民间歌谣、乡老汇报精准预判舆情走向，这种现代公关的能力被保守派视为妖术，他必须隐藏秘密推行新政。" }
   ];
 
   return (
-    <div className="space-y-6 flex-1 flex flex-col">
-      <div className="text-center max-w-2xl mx-auto">
-        <h3 className="text-xl font-sans font-bold text-text-main mb-1 tracking-[0.2em] uppercase">确立故事主轴</h3>
-        <p className="text-muted-text text-[13px] font-sans">基于你确认的世界观、人物与地图，系统推演三条可选主线方向。</p>
-      </div>
-
+    <div className="space-y-6 flex-1 flex flex-col justify-center">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {lines.map(line => (
           <button
-            key={line.id}
+            key={`storyline-choice-${line.id}`}
             onClick={() => onSelect(line.id)}
             className={`
               relative flex flex-col rounded-2xl border text-left transition-all group overflow-hidden
@@ -671,7 +815,13 @@ function StorylineContent({ selected, onSelect }: { selected: number | null; onS
             `}
           >
             <div className="aspect-video relative overflow-hidden">
-              <img src={line.img} alt={line.title} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500" referrerPolicy="no-referrer" />
+              <SmartImage 
+                src={line.img} 
+                fallback={line.fallback}
+                alt={line.title} 
+                className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500" 
+                referrerPolicy="no-referrer" 
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-panel-bg/80 to-transparent" />
               <div className="absolute top-4 left-4">
                 <span className="text-xs font-mono text-brand-red border border-brand-red/30 px-2 py-0.5 rounded uppercase tracking-widest bg-app-bg/80">{line.tag}</span>
@@ -695,9 +845,9 @@ function StorylineContent({ selected, onSelect }: { selected: number | null; onS
   );
 }
 
-function PlotArcContent() {
+function PlotArcContent({ isDarkMode }: { isDarkMode: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-start space-y-8 py-6 text-center flex-1">
+    <div className="flex flex-col items-center justify-center space-y-8 py-6 text-center flex-1">
       <div className="relative inline-block shrink-0">
         <Activity className="w-16 h-16 text-brand-red mx-auto mb-4" />
         <motion.div 
@@ -705,11 +855,6 @@ function PlotArcContent() {
           transition={{ duration: 2, repeat: Infinity }}
           className="absolute inset-0 bg-brand-red/20 blur-3xl rounded-full"
         />
-      </div>
-      
-      <div className="shrink-0">
-        <h3 className="text-3xl font-sans font-bold text-text-main mb-4 tracking-[0.2em] uppercase">设计情节弧线</h3>
-        <p className="text-lg font-sans italic opacity-80">规划故事的起承转合，设置关键剧情点和张力变化。</p>
       </div>
 
       <div className="w-full max-w-xl mx-auto space-y-6 text-left bg-panel-bg/20 p-6 rounded-3xl border border-hud-border/20 backdrop-blur-sm">
@@ -733,8 +878,8 @@ function Section({ title, icon: Icon, items }: { title: string; icon: any; items
         <Icon className="w-5 h-5 text-brand-red/50 group-hover:text-brand-red transition-colors" />
       </div>
       <div className="p-6 space-y-6 flex-1">
-        {items.map(item => (
-          <div key={item.label} className="relative pl-10 border-l border-hud-border/20 hover:border-brand-red/30 transition-colors">
+        {items.map((item, idx) => (
+          <div key={`section-item-${title}-${item.label}-${idx}`} className="relative pl-10 border-l border-hud-border/20 hover:border-brand-red/30 transition-colors">
             {item.icon && (
               <div className="absolute -left-4 top-0 w-8 h-8 bg-app-bg border border-hud-border/30 rounded-full flex items-center justify-center shadow-lg">
                 <item.icon className="w-4 h-4 text-brand-red" />

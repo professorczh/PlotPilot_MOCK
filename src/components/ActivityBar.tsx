@@ -1,4 +1,4 @@
-import { Book, FileText, Search, Globe, GitBranch, Settings, LucideIcon, Sun, Moon, Terminal, Monitor } from 'lucide-react';
+import { Book, FileText, Search, Workflow, GitBranch, Settings, LucideIcon, Sun, Moon, Terminal, Monitor } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
   { id: 'chapters', icon: FileText, label: '章节目录' },
   { id: 'branch', icon: GitBranch, label: '分支管理' },
   { id: 'search', icon: Search, label: '全局搜索' },
-  { id: 'world', icon: Globe, label: '世界百科' },
+  { id: 'world', icon: Workflow, label: '工作流' },
 ];
 
 export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChange }: ActivityBarProps) {
@@ -55,7 +55,7 @@ export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChan
                 "group relative p-2.5 transition-all duration-300 rounded-lg",
                 activeTab === item.id 
                   ? "text-brand-red bg-brand-red/10" 
-                  : "text-muted-text hover:text-text-main hover:bg-white/5"
+                  : cn("text-muted-text hover:text-text-main", isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5")
               )}
               title={item.label}
             >
@@ -77,8 +77,9 @@ export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChan
           >
             <button 
               className={cn(
-                "p-2.5 transition-all duration-300 text-muted-text hover:text-text-main hover:bg-white/5 relative overflow-hidden group rounded-lg",
-                isThemeHovered && "bg-white/5 text-text-main"
+                "p-2.5 transition-all duration-300 text-muted-text hover:text-text-main relative overflow-hidden group rounded-lg",
+                (isThemeHovered || false) && (isDarkMode ? "bg-white/5" : "bg-black/5"),
+                !isThemeHovered && (isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5")
               )}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -112,6 +113,7 @@ export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChan
                   <div className="flex items-center gap-1">
                     <ThemeButton 
                       isActive={isDarkMode} 
+                      isDarkMode={isDarkMode}
                       onClick={() => onThemeChange('ink')} 
                       icon={Moon} 
                       label="深色模式 (Ink)"
@@ -119,6 +121,7 @@ export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChan
                     />
                     <ThemeButton 
                       isActive={isPaperMode} 
+                      isDarkMode={isDarkMode}
                       onClick={() => onThemeChange('paper')} 
                       icon={Sun} 
                       label="浅色模式 (Paper)"
@@ -127,6 +130,7 @@ export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChan
                     <div className="w-px h-4 bg-hud-border/40 mx-1" />
                     <ThemeButton 
                       isActive={isClassicMode} 
+                      isDarkMode={isDarkMode}
                       onClick={() => onThemeChange('classic')} 
                       icon={Terminal} 
                       label="浅色清爽 (Classic)"
@@ -141,8 +145,10 @@ export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChan
           <button
             onClick={() => onTabChange('settings')}
             className={cn(
-              "p-2.5 transition-all duration-300 text-muted-text hover:text-text-main hover:bg-white/5 rounded-lg",
-              activeTab === 'settings' && "text-brand-red bg-brand-red/10"
+              "p-2.5 transition-all duration-300 text-muted-text hover:text-text-main rounded-lg",
+              activeTab === 'settings' 
+                ? "text-brand-red bg-brand-red/10" 
+                : (isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5")
             )}
             title="设置"
           >
@@ -154,8 +160,9 @@ export default function ActivityBar({ activeTab, onTabChange, theme, onThemeChan
   );
 }
 
-function ThemeButton({ isActive, onClick, icon: Icon, label, colorClass }: { 
+function ThemeButton({ isActive, isDarkMode, onClick, icon: Icon, label, colorClass }: { 
   isActive: boolean; 
+  isDarkMode: boolean;
   onClick: () => void; 
   icon: LucideIcon; 
   label: string;
@@ -167,8 +174,8 @@ function ThemeButton({ isActive, onClick, icon: Icon, label, colorClass }: {
       className={cn(
         "flex items-center gap-2 px-3 py-1.5 rounded transition-all group whitespace-nowrap",
         isActive 
-          ? "bg-white/10 text-text-main" 
-          : "text-muted-text hover:bg-white/5 hover:text-text-main"
+          ? (isDarkMode ? "bg-white/10" : "bg-black/10") + " text-text-main" 
+          : "text-muted-text " + (isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5") + " hover:text-text-main"
       )}
       title={label}
     >

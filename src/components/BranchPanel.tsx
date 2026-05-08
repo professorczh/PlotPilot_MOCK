@@ -141,8 +141,8 @@ export default function BranchPanel({ isMockLoadingEnabled = true }: BranchPanel
             {/* Timeline Line */}
             <div className="absolute left-[9px] top-2 bottom-2 w-px bg-hud-border/40" />
 
-            {branches.map((branch) => (
-              <div key={branch.id} className="relative pl-6 space-y-2">
+            {branches.map((branch, bIdx) => (
+              <div key={`branch-${branch.id}-${bIdx}`} className="relative pl-6 space-y-2">
                 {/* Branch Node */}
                 <div className={cn(
                   "absolute left-[-4px] top-1.5 w-4 h-4 rounded-full border-2 border-panel-bg z-10",
@@ -173,7 +173,7 @@ export default function BranchPanel({ isMockLoadingEnabled = true }: BranchPanel
 
                 <div className="space-y-1.5">
                   {branch.commits.slice(0, 2).map((commit, cIdx) => (
-                    <div key={commit.id} className={cn(
+                    <div key={`commit-${branch.id}-${commit.id}-${cIdx}`} className={cn(
                       "group relative rounded-lg p-2 transition-all border",
                       activeBranchId === branch.id 
                         ? "bg-white/5 border-white/5" 

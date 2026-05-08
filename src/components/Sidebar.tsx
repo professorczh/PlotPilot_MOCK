@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Search, ChevronRight, Plus, Library, Book, FileText, ChevronDown } from 'lucide-react';
+import { Search, ChevronRight, Plus, Library, Book, FileText, ChevronDown, Play } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { NovelBook } from '../types';
+import { NovelBook, ThemeMode } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
   book: NovelBook;
   activeChapterId: string;
   onChapterSelect: (id: string) => void;
+  theme?: ThemeMode;
 }
 
-export default function Sidebar({ book, activeChapterId, onChapterSelect }: SidebarProps) {
+export default function Sidebar({ book, activeChapterId, onChapterSelect, theme = 'ink' }: SidebarProps) {
+  const isDarkMode = theme === 'ink';
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set([book.id, book.volumes[0].id, book.volumes[0].stages[0].id]));
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -54,7 +56,10 @@ export default function Sidebar({ book, activeChapterId, onChapterSelect }: Side
           <div className="space-y-1">
             <button 
               onClick={() => toggleExpand(book.id)}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
+              className={cn(
+                "w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors group",
+                isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5"
+              )}
             >
               {isExpanded(book.id) ? <ChevronDown className="w-3.5 h-3.5 text-muted-text" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-text" />}
               <Library className="w-4 h-4 text-brand-red" />
@@ -71,10 +76,13 @@ export default function Sidebar({ book, activeChapterId, onChapterSelect }: Side
                 >
                   {/* Level 2: Volumes */}
                   {book.volumes.map(volume => (
-                    <div key={volume.id} className="space-y-1">
+                    <div key={`sidebar-vol-${volume.id}`} className="space-y-1">
                       <button 
                         onClick={() => toggleExpand(volume.id)}
-                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group"
+                        className={cn(
+                          "w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors group",
+                          isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5"
+                        )}
                       >
                         {isExpanded(volume.id) ? <ChevronDown className="w-3 h-3 text-muted-text" /> : <ChevronRight className="w-3 h-3 text-muted-text" />}
                         <Book className="w-3.5 h-3.5 text-brand-red opacity-80" />
@@ -91,10 +99,13 @@ export default function Sidebar({ book, activeChapterId, onChapterSelect }: Side
                           >
                             {/* Level 3: Stages */}
                             {volume.stages.map(stage => (
-                              <div key={stage.id} className="space-y-1">
+                              <div key={`sidebar-stage-${stage.id}`} className="space-y-1">
                                 <button 
                                   onClick={() => toggleExpand(stage.id)}
-                                  className="w-full flex flex-col px-2 py-2 rounded-lg hover:bg-white/5 transition-colors group"
+                                  className={cn(
+                                    "w-full flex flex-col px-2 py-2 rounded-lg transition-colors group",
+                                    isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5"
+                                  )}
                                 >
                                   <div className="flex items-center gap-2">
                                     {isExpanded(stage.id) ? <ChevronDown className="w-2.5 h-2.5 text-muted-text" /> : <ChevronRight className="w-2.5 h-2.5 text-muted-text" />}
@@ -104,7 +115,7 @@ export default function Sidebar({ book, activeChapterId, onChapterSelect }: Side
                                     </span>
                                   </div>
                                   {stage.description && (
-                                    <p className="text-[10px] text-muted-text mt-1 pl-4 leading-relaxed line-clamp-2 opacity-60 font-sans italic text-left">
+                                    <p className="text-[10px] text-muted-text mt-1 pl-4 leading-relaxed line-clamp-2 opacity-60 font-sans text-left">
                                       {stage.description}
                                     </p>
                                   )}
@@ -120,14 +131,21 @@ export default function Sidebar({ book, activeChapterId, onChapterSelect }: Side
                                     >
                                       {/* Level 4: Chapters */}
                                       {stage.chapters.map((chapter) => (
-                                        <button
-                                          key={chapter.id}
+                                        <div
+                                          key={`sidebar-chap-${chapter.id}`}
                                           onClick={() => onChapterSelect(chapter.id)}
+                                          role="button"
+                                          tabIndex={0}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                              onChapterSelect(chapter.id);
+                                            }
+                                          }}
                                           className={cn(
-                                            "w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all group",
+                                            "w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all group cursor-pointer",
                                             activeChapterId === chapter.id 
                                               ? "bg-brand-red/10 text-text-main" 
-                                              : "text-muted-text hover:bg-white/5 hover:text-text-main"
+                                              : cn("text-muted-text hover:text-text-main", isDarkMode ? "hover:bg-white/5" : "hover:bg-black/5")
                                           )}
                                         >
                                           <div className="flex-1 min-w-0 flex items-center gap-2">
@@ -135,16 +153,42 @@ export default function Sidebar({ book, activeChapterId, onChapterSelect }: Side
                                             <span className="text-[11px] truncate">{chapter.title}</span>
                                           </div>
                                           <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                            {chapter.status === 'completed' ? (
+                                            {chapter.status === 'completed' && (
                                               <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-full border border-emerald-500/20 font-bold uppercase">已收稿</span>
-                                            ) : (
+                                            )}
+                                            {chapter.status === 'processing' && (
+                                              <div className="flex items-center gap-1.5">
+                                                <motion.span 
+                                                  animate={{ opacity: [0.5, 1, 0.5], scale: [0.98, 1, 0.98] }}
+                                                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                                  className="text-[8px] bg-brand-red/10 text-brand-red px-1.5 py-0.5 rounded-full border border-brand-red/20 font-bold uppercase shadow-[0_0_8px_rgba(220,38,38,0.2)]"
+                                                >
+                                                  收稿中
+                                                </motion.span>
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    // This will trigger the same automation flow
+                                                    onChapterSelect(chapter.id);
+                                                    setTimeout(() => {
+                                                       (window as any).startAutomation?.();
+                                                    }, 100);
+                                                  }}
+                                                  className="w-5 h-5 flex items-center justify-center rounded-full bg-brand-red/10 border border-brand-red/30 text-brand-red hover:bg-brand-red hover:text-white transition-all duration-300"
+                                                  title="启动协同模式"
+                                                >
+                                                   <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+                                                </button>
+                                              </div>
+                                            )}
+                                            {chapter.status === 'draft' && (
                                               <span className="text-[8px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full border border-amber-500/20 font-bold uppercase">未收稿</span>
                                             )}
                                             {chapter.wordCount > 0 && (
                                               <span className="text-[9px] font-mono opacity-40">{chapter.wordCount}</span>
                                             )}
                                           </div>
-                                        </button>
+                                        </div>
                                       ))}
                                     </motion.div>
                                   )}

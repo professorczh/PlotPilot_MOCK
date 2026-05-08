@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Settings, Key, Globe, Shield, Save, AlertCircle, Link as LinkIcon, ChevronDown, Plus, Zap, Type, Image as ImageIcon } from 'lucide-react';
+import { X, Settings, Key, Globe, Shield, Save, AlertCircle, Link as LinkIcon, ChevronDown, Plus, Zap, Type, Image as ImageIcon, Share2 } from 'lucide-react';
+import ShareCardModal from './ShareCardModal';
 
 type TabType = 'text' | 'image';
 
@@ -55,6 +56,7 @@ export default function SettingsModal({
   const [imageAddStage, setImageAddStage] = useState<'idle' | 'input' | 'preview'>('idle');
   const [newImageApiKey, setNewImageApiKey] = useState('');
   const [previewImageConfig, setPreviewImageConfig] = useState<ApiConfig | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('plot-pilot-api-configs');
@@ -207,9 +209,10 @@ export default function SettingsModal({
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div key="settings-modal-root" className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -294,7 +297,7 @@ export default function SettingsModal({
                         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                           {configs.map((config, idx) => (
                             <button
-                              key={`${config.provider}-${idx}`}
+                              key={`text-config-${config.provider}-${idx}`}
                               onClick={() => { setSelectedTextIndex(idx); setAddStage('idle'); }}
                               className={`w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all group ${
                                 selectedTextIndex === idx && addStage === 'idle'
@@ -488,7 +491,7 @@ export default function SettingsModal({
                         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                           {imageConfigs.map((config, idx) => (
                             <button
-                              key={`${config.provider}-${idx}`}
+                              key={`image-config-${config.provider}-${idx}`}
                               onClick={() => { setSelectedImageIndex(idx); setImageAddStage('idle'); }}
                               className={`w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all group ${
                                 selectedImageIndex === idx && imageAddStage === 'idle'
@@ -692,6 +695,14 @@ export default function SettingsModal({
                   />
                   <div className={`w-11 h-5 bg-hud-border rounded-full peer peer-checked:bg-brand-red/30 transition-all border border-hud-border/50 group-hover:border-brand-red/30 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-muted-text peer-checked:after:bg-brand-red after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-6 shadow-inner`}></div>
                 </label>
+                
+                <button 
+                  onClick={() => setIsShareModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 ml-4 rounded-xl border border-hud-border/30 text-[10px] font-sans font-bold text-muted-text hover:text-brand-red hover:border-brand-red/40 transition-all uppercase tracking-widest bg-white/5 active:scale-95"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>分享</span>
+                </button>
               </div>
 
               <div className="flex gap-4">
@@ -728,6 +739,11 @@ export default function SettingsModal({
         </motion.div>
       </div>
     )}
-  </AnimatePresence>
+    </AnimatePresence>
+    <ShareCardModal 
+      isOpen={isShareModalOpen} 
+      onClose={() => setIsShareModalOpen(false)} 
+    />
+    </>
   );
 }

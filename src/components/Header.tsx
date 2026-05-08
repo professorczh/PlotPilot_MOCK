@@ -82,23 +82,20 @@ export function MainHeader({
               <span className="text-muted-text">创作进度</span>
               <span className="text-brand-red font-bold">100.0%</span>
             </div>
-            <div className="flex flex-col items-center hidden lg:flex">
-              <span className="text-muted-text">阅读总量</span>
-              <span className="text-text-main font-medium">3,033</span>
-            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 border-l border-hud-border pl-6">
+      <div className="flex items-center gap-2">
         <button 
           onClick={onToggleAnalytics}
           className={`flex items-center gap-2 transition-colors group px-2 py-1 rounded-lg cursor-pointer ${isAnalyticsVisible ? 'text-brand-red bg-brand-red/10' : 'text-muted-text hover:text-brand-red'}`}
-          title={isAnalyticsVisible ? "隐藏张力图" : "显示张力图"}
+          title={isAnalyticsVisible ? "隐藏分析面板" : "显示分析面板"}
         >
           <Activity className={`w-3.5 h-3.5 ${isAnalyticsVisible ? '' : 'group-hover:animate-pulse'}`} />
-          <span className="font-sans text-[11px] font-bold uppercase tracking-widest hidden md:inline">张力心电图</span>
+          <span className="font-sans text-[11px] font-bold uppercase tracking-widest hidden md:inline">分析面板</span>
         </button>
+
         <button 
           onClick={onToggleAIPanel}
           className={`flex items-center gap-2 transition-colors group px-2 py-1 rounded-lg cursor-pointer ${isAIPanelVisible ? 'text-brand-red bg-brand-red/10' : 'text-muted-text hover:text-brand-red'}`}

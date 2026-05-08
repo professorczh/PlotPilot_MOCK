@@ -191,7 +191,7 @@ export default function LandingPage({
           <motion.p 
             layout
             variants={itemVariants}
-            className="text-lg md:text-xl font-sans italic text-muted-text mb-16 tracking-[0.5em]"
+            className="text-lg md:text-xl font-sans text-muted-text mb-16 tracking-[0.5em]"
           >
             —— 作者的领航员 ——
           </motion.p>
@@ -222,7 +222,7 @@ export default function LandingPage({
                   // Prevent input blur before click is registered
                   if (inputValue.trim()) e.preventDefault();
                 }}
-                className="bg-brand-red text-white p-4 rounded-lg hover:bg-red-700 transition-all disabled:opacity-20 shadow-[0_0_15px_rgba(220,38,38,0.2)] active:scale-95"
+                className="bg-brand-red text-white p-4 rounded-lg hover:brightness-125 transition-all disabled:opacity-20 shadow-[0_0_15px_rgba(220,38,38,0.2)] active:scale-95"
               >
                 <Send className="w-6 h-6" />
               </button>
@@ -260,7 +260,7 @@ export default function LandingPage({
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {existingNovels.map((novel) => (
                     <button
-                      key={novel.id}
+                      key={`novel-card-${novel.id}`}
                       onClick={() => onSelectNovel(novel.id)}
                       className="group relative bg-panel-bg/40 border border-hud-border rounded-xl p-6 text-left transition-all hover:border-brand-red/50 hover:bg-panel-bg/60 hover:shadow-[0_0_30px_rgba(220,38,38,0.05)] overflow-hidden"
                     >

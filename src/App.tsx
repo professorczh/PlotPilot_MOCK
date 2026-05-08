@@ -6,11 +6,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Panel, Group, Separator, useDefaultLayout } from 'react-resizable-panels';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Terminal } from 'lucide-react';
 import type { Layout } from 'react-resizable-panels';
 import { cn } from './lib/utils';
 import ActivityBar from './components/ActivityBar';
 import AIActivityBar from './components/AIActivityBar';
+import WorldExplorer from './components/WorldExplorer';
 import { SidebarHeader, MainHeader } from './components/Header';
 import Sidebar from './components/Sidebar';
 import Editor from './components/Editor';
@@ -22,6 +23,7 @@ import Onboarding from './components/Onboarding';
 import LandingPage from './components/LandingPage';
 import SettingsModal from './components/SettingsModal';
 import BranchPanel from './components/BranchPanel';
+import WorkflowSidebar from './components/WorkflowSidebar';
 import { FloatingAgent } from './components/FloatingAgent'; 
 import { Chapter, NovelBook, SidebarTab, AgentMessage, ThemeMode, AgentStatus } from './types';
 
@@ -38,11 +40,39 @@ const INITIAL_BOOK: NovelBook = {
           title: '卷一、改',
           description: '林墨改良农具救活庄稼，被伍老赏识，觉察异样，李拓为求爵位主动庇护并教导秦律。',
           chapters: [
-            { id: '1', title: '第1章 荒野之变', status: 'completed', wordCount: 4796, content: '<p>林墨揪着被巴邑的数学练习册从教学楼后侧的杂物巷走出来的时候，帆布鞋尖还沾着张磊刚泼在地上的矿泉水印。左脸的巴掌印热辣辣地疼，黑框眼镜的镜腿刚才被打的时候蹬了一道划痕，架在鼻梁上总往下滑。他不敢去医务室，更不敢找老师，去年有个高一的学生告张磊霸凌，转头就被安了个“寻衅滋事”的名头劝退，谁都知道张磊他爸是学校的大金主，校领导都要让三分。</p>' },
-            { id: '2', title: '第2章 暗流涌动', status: 'completed', wordCount: 4694, content: '<p>内容加载中...</p>' },
-            { id: '3', title: '第3章 利益交换', status: 'completed', wordCount: 4333, content: '<p>内容加载中...</p>' },
-            { id: '4', title: '第4章 律法之教', status: 'completed', wordCount: 4275, content: '<p>内容加载中...</p>' },
-            { id: '5', title: '第5章 初显峥嵘', status: 'completed', wordCount: 3992, content: '<p>内容加载中...</p>' },
+            { id: 'chap_1', title: '第1章 荒野之变', status: 'completed', wordCount: 4796, relatedCharacters: ['1'], relatedLocations: ['1'], content: `林墨揪着被巴邑的数学练习册从教学楼后侧的杂物巷走出来的时候，帆布鞋尖还沾着张磊刚泼在地上的矿泉水印。左脸的巴掌印热辣辣地疼，黑框眼镜的镜腿刚才被打的时候蹬了一道划痕，架在鼻梁上总往下滑。
+
+他不敢去医务室，更不敢找老师，去年有个高一的学生告张磊霸凌，转头就被安了个“寻衅滋事”的名头劝退，谁都知道张磊他爸是学校的大金主，校领导都要让三分。
+
+天色渐暗，咸阳城的影子在夕阳下斜斜拉长，如同古代某种巨大的爬行兽。林墨深吸一口气，心中却满是冷冽。他知道，这荒野之上的变革，才刚刚开始。在这个时代的洪流中，没有人能独善其身。` },
+            { id: 'chap_2', title: '第2章 暗流涌动', status: 'completed', wordCount: 4694, relatedCharacters: ['1', '2'], relatedLocations: ['1', '2'], content: `章台宫的深夜，灯火摇曳。始皇帝的影子投射在巨大的屏风上，显得孤寂而威严。
+
+李拓跪在大殿中央，额头贴在冰冷的汉白玉砖面上，汗珠顺着鬓角滑落。他怀里揣着那本关于“改良农具”的密报，那是他翻身的唯一机会。
+
+“陛下，林墨此人，虽处江湖之远，却怀经纬之才。”李拓的声音因紧张而略显嘶哑，“臣亲眼所见，他所造之物，能使关中沃野再增三成产出。”
+
+咸阳城的风，似乎在这一刻停止了流动。每个人都在等待着那个足以改变命运的裁决。` },
+            { id: 'chap_3', title: '第3章 利益交换', status: 'completed', wordCount: 4333, relatedCharacters: ['2', '3'], relatedLocations: ['2', '3'], content: `伍老坐在田垄上，浑浊的眼睛里闪过一丝精光。他看着在田间忙碌的林墨，心中五味杂陈。
+
+“娃子，你这手艺，是要招祸的。”伍老抽了一口旱烟，吐出的烟雾在晨光中缓缓散开。
+
+林墨没有停下手里的活计，只是淡淡一笑：“伍老，祸起于贪，而福源于德。这农具是给百姓用的，不是给权贵摆设的。”
+
+就在这时，远处马蹄声飞扬，一队禁卫军在李拓的带领下正疾驰而来。林墨知道，这场关于权力与利益的博弈，已经让他彻底卷入其中，无法回头。` },
+            { id: 'chap_4', title: '第4章 律法之教', status: 'completed', wordCount: 4275, relatedCharacters: ['1', '4'], relatedLocations: ['4', '1'], content: `《秦律》重如泰山，每一个刻在竹简上的字，都带着某种难以名状的压力。
+
+李拓将一卷厚厚的律法推向林墨：“想要活下去，不仅要会锄头，更要懂法。在大秦，法就是唯一的规矩。”
+
+林墨翻开竹简，那些晦涩难懂的文字，在他现代大脑的解析下，竟然产生了一种奇妙的共鸣。他发现，这不仅是惩戒的工具，更是治理国家的精密逻辑。
+
+“刑过不避大臣，赏善不遗匹夫。”林墨低声诵读着，眼神越来越明亮。他不仅在学法，他是在寻找这个庞大帝国的破绽与生机。` },
+            { id: 'chap_5', title: '第5章 初显峥嵘', status: 'processing', wordCount: 3992, relatedCharacters: ['1', '3', '4'], relatedLocations: ['1', '5'], content: `咸阳宫内，群臣屏息。
+
+林墨一袭青衫，站在朝堂中央，面对着那些掌握帝国生杀大权的巨头，神色从容不迫。
+
+“改良之法，不在于力，而在于序。”林墨展开手中的图纸，那不仅仅是农具的设计，更是一整套关于资源调度与舆情处理的超前方案。
+
+扶苏坐在始皇帝下首，目光深邃地盯着这个名不见经传的年轻人。他隐约感觉到，大秦的未来，或许会因为这个不速之客，走向一个完全不同的分叉口。` },
           ]
         },
         {
@@ -50,11 +80,11 @@ const INITIAL_BOOK: NovelBook = {
           title: '卷二、织',
           description: '林墨为阿拾改良织机以应付苛捐，被郡尉赵亥盯上，赵亥以“六国细作”罪名进行盘查。',
           chapters: [
-            { id: '6', title: '第6章 机杼变法', status: 'draft', wordCount: 0, content: '' },
-            { id: '7', title: '第7章 织机惊梦', status: 'draft', wordCount: 0, content: '' },
-            { id: '8', title: '第8章 酷吏入村', status: 'draft', wordCount: 0, content: '' },
-            { id: '9', title: '第9章 莫须之罪', status: 'draft', wordCount: 0, content: '' },
-            { id: '10', title: '第10章 危局待解', status: 'draft', wordCount: 0, content: '' },
+            { id: 'chap_6', title: '第6章 机杼变法', status: 'draft', wordCount: 0, content: '' },
+            { id: 'chap_7', title: '第7章 织机惊梦', status: 'draft', wordCount: 0, content: '' },
+            { id: 'chap_8', title: '第8章 酷吏入村', status: 'draft', wordCount: 0, content: '' },
+            { id: 'chap_9', title: '第9章 莫须之罪', status: 'draft', wordCount: 0, content: '' },
+            { id: 'chap_10', title: '第10章 危局待解', status: 'draft', wordCount: 0, content: '' },
           ]
         }
       ]
@@ -67,9 +97,10 @@ type ViewState = 'landing' | 'onboarding' | 'editor';
 export default function App() {
   const [view, setView] = useState<ViewState>('landing');
   const [book, setBook] = useState<NovelBook>(INITIAL_BOOK);
-  const [activeChapterId, setActiveChapterId] = useState('1');
+  const [activeChapterId, setActiveChapterId] = useState('chap_1');
   const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>('chapters');
   const [activeAITab, setActiveAITab] = useState<SidebarTab>('ai-chat');
+  const [isExplorerOpen, setIsExplorerOpen] = useState(false);
   // Re-enabling layout persistence with a fresh, stable production ID
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: 'PLOT_PILOT_STABLE_V6',
@@ -88,7 +119,7 @@ export default function App() {
   ]);
 
   // Helper to simulate a complex Agent reasoning process
-  const simulateAgentTraceResponse = (text: string, context: 'world' | 'character' | 'map' | 'plot' | 'general' = 'general') => {
+  const simulateAgentTraceResponse = (text: string, context: 'world' | 'character' | 'map' | 'plot' | 'general' = 'general', isSystem: boolean = false) => {
     const traceTemplates = {
       world: [
         { id: 't1', label: '检索大秦因果冲突模型', type: 'search' as const },
@@ -119,36 +150,38 @@ export default function App() {
       ]
     };
 
+    const messageId = `ai-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+
     const initialSteps = traceTemplates[context].map((s, idx) => ({ 
       ...s, 
+      id: `${s.id}-${messageId}-${idx}`,
       status: (idx === 0 ? 'thinking' : 'pending') as any 
     }));
     
     // Create mock suggestions to show within the Agent message
     const mockSuggestions = [
       { 
-        id: 's_01', 
+        id: `s_01-${messageId}-${Date.now()}`, 
         title: '候选方案_01', 
         isRecommended: true,
         content: '“秘密基地不仅是一个藏身处，更是一个时空锚点。当主角林墨踏入此地，周围的空气开始液化，历史的重影在此交叠...”'
       },
       { 
-        id: 's_02', 
+        id: `s_02-${messageId}-${Date.now()}`, 
         title: '候选方案_02', 
         isRecommended: false,
         content: '张磊的挑衅其实是“暗影”组织的一次压力测试，旨在观测主角在极端情绪下的灵力波动数值。'
       }
     ];
 
-    const messageId = `ai-${Date.now()}`;
-
-    // Add the thinking message
+        // Add the thinking message
     const thinkingMsg: AgentMessage = { 
       id: messageId,
       role: 'ai', 
       text: '', 
       trace: initialSteps, 
-      isThinking: true 
+      isThinking: true,
+      isSystem: isSystem
     };
     
     setAgentMessages(prev => [...prev, thinkingMsg]);
@@ -205,7 +238,11 @@ export default function App() {
   };
 
   const handleSendAgentMessage = (text: string) => {
-    const newUserMsg: AgentMessage = { role: 'user', text };
+    const newUserMsg: AgentMessage = { 
+      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      role: 'user', 
+      text 
+    };
     setAgentMessages(prev => [...prev, newUserMsg]);
 
     const responseText = `收到！关于你提到的“${text.substring(0, 10)}...”，我建议可以根据当前的推演方向进行更细致的延展。需要我为你生成具体的文本片段并填入草稿吗？`;
@@ -219,9 +256,9 @@ export default function App() {
     simulateAgentTraceResponse(responseText, context);
   };
 
-  const handleAddAgentAIResponse = (text: string, context?: 'world' | 'character' | 'map' | 'plot' | 'general') => {
+  const handleAddAgentAIResponse = (text: string, context?: 'world' | 'character' | 'map' | 'plot' | 'general', isSystem: boolean = false) => {
     // Force simulation for onboarding steps to ensure UI synchronization
-    simulateAgentTraceResponse(text, context || 'general');
+    simulateAgentTraceResponse(text, context || 'general', isSystem);
   };
   
   // Update sidebar expansion state based on its current size
@@ -239,15 +276,15 @@ export default function App() {
   const [analyticsHeight, setAnalyticsHeight] = useState(30);
   const [isAIPanelVisible, setIsAIPanelVisible] = useState(false);
   const [isAgentMode, setIsAgentMode] = useState(false);
-  const [agentStatus, setAgentStatus] = useState<AgentStatus>('idle');
+  const [agentStatus, setAgentStatus] = useState<AgentStatus>('none');
   const isInternalToggleRef = useRef(false);
   const analyticsPanelRef = useRef<any>(null);
   const aiPanelRef = useRef<any>(null);
   const sidebarPanelRef = useRef<any>(null);
   
   const [novels, setNovels] = useState([
-    { id: '1', title: '修真界的都市访客', lastEdited: '2小时前', wordCount: 1245, status: '连载中' },
-    { id: '2', title: '赛博朋克：霓虹之雨', lastEdited: '昨天', wordCount: 45200, status: '已完结' },
+    { id: 'novel_1', title: '修真界的都市访客', lastEdited: '2小时前', wordCount: 1245, status: '连载中' },
+    { id: 'novel_2', title: '赛博朋克：霓虹之雨', lastEdited: '昨天', wordCount: 45200, status: '已完结' },
   ]);
 
   // Scrollbar auto-show effect
@@ -328,15 +365,37 @@ export default function App() {
   };
 
   const handleOpenAgent = () => {
-    setIsAgentMode(true);
-    setAgentStatus('panel_open');
-    if (aiPanelRef.current) {
-      const isCollapsed = aiPanelRef.current.isCollapsed();
-      if (isCollapsed) {
-        aiPanelRef.current.expand(30);
-      }
+    if (agentStatus === 'writing') {
+      setAgentStatus('completed');
+      return;
     }
+    setIsAgentMode(true);
+    if (!isAIPanelVisible) {
+      setIsAIPanelVisible(true);
+      if (aiPanelRef.current) aiPanelRef.current.expand(30);
+    }
+    setAgentStatus('panel_open');
   };
+
+  const handleAgentCoreClick = () => {
+    handleOpenAgent();
+    // No longer automatically trigger process, let the user click the card
+  };
+
+  const handleStartAutomation = () => {
+    // Open AI Panel and ensure status is panel_open to show the card
+    setIsAgentMode(true);
+    if (!isAIPanelVisible) {
+      setIsAIPanelVisible(true);
+      if (aiPanelRef.current) aiPanelRef.current.expand(30);
+    }
+    setAgentStatus('panel_open');
+  };
+
+  useEffect(() => {
+    (window as any).startAutomation = handleStartAutomation;
+    return () => { delete (window as any).startAutomation; };
+  }, [handleStartAutomation]);
 
   const startAgentProcess = () => {
     setAgentStatus('starting');
@@ -345,16 +404,17 @@ export default function App() {
     setTimeout(() => {
       setAgentStatus('running');
       
-      const messageId = `agent_${Date.now()}`;
+      const processId = Date.now();
+      const messageId = `agent_${processId}`;
       const initialMessage: AgentMessage = {
         id: messageId,
         role: 'ai',
         content: '“墨枢”自动化协同推演模式已激活。正在扫描当前章节脉络与因果逻辑...',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         trace: [
-          { id: 'scan_1', label: '世界观稳定性因果校验', status: 'thinking', type: 'check' },
-          { id: 'scan_2', label: '角色动机一致性检索', status: 'pending', type: 'check' },
-          { id: 'scan_3', label: '高纬度剧情分支推演', status: 'pending', type: 'logic' }
+          { id: `scan_1_${processId}`, label: '世界观稳定性因果校验', status: 'thinking', type: 'check' },
+          { id: `scan_2_${processId}`, label: '角色动机一致性检索', status: 'pending', type: 'check' },
+          { id: `scan_3_${processId}`, label: '高纬度剧情分支推演', status: 'pending', type: 'logic' }
         ]
       };
 
@@ -366,8 +426,8 @@ export default function App() {
           msg.id === messageId ? {
             ...msg,
             trace: msg.trace?.map(s => 
-              s.id === 'scan_1' ? { ...s, status: 'completed' } :
-              s.id === 'scan_2' ? { ...s, status: 'thinking' } : s
+              s.id === `scan_1_${processId}` ? { ...s, status: 'completed' } :
+              s.id === `scan_2_${processId}` ? { ...s, status: 'thinking' } : s
             )
           } : msg
         ));
@@ -378,19 +438,19 @@ export default function App() {
             msg.id === messageId ? {
               ...msg,
               trace: msg.trace?.map(s => 
-                s.id === 'scan_2' ? { ...s, status: 'completed' } :
-                s.id === 'scan_3' ? { ...s, status: 'thinking', label: '高纬度剧情分支推演中...' } : s
+                s.id === `scan_2_${processId}` ? { ...s, status: 'completed' } :
+                s.id === `scan_3_${processId}` ? { ...s, status: 'thinking', label: '高纬度剧情分支推演中...' } : s
               ),
               suggestions: [
                 {
-                  id: 'suggest_branch_1',
+                  id: `suggest_branch_1_${processId}`,
                   title: '引入“墨家”隐世机关术',
                   content: '在主角陷入绝境时，由于对古籍的特殊理解触发了机关室的隐藏防御机制，这不仅解决了眼前的危机，还为接下来的“机关城”副本埋下伏笔。',
                   type: 'plot',
                   isRecommended: true
                 },
                 {
-                  id: 'suggest_branch_2',
+                  id: `suggest_branch_2_${processId}`,
                   title: '揭示“守门人”的真实身份',
                   content: '通过一段破碎的回忆杀，暗示守门人其实是上一任掌门的残魂，这种情感层面的反转会增加剧情的厚度，并引导主角产生强烈使命感。',
                   type: 'character'
@@ -425,7 +485,8 @@ export default function App() {
 
     // 2. Delay the final completion to simulate "applying" work
     setTimeout(() => {
-      setAgentStatus('completed');
+      setAgentStatus('writing');
+      setActiveChapterId('chap_5');
       
       setAgentMessages(prev => {
         const messages = [...prev];
@@ -433,7 +494,7 @@ export default function App() {
         for (let i = messages.length - 1; i >= 0; i--) {
           if (messages[i].role === 'ai' && messages[i].trace) {
             const newTrace = (messages[i].trace || []).map(step => 
-              step.id === 'scan_3' ? { ...step, status: 'completed' as const, label: '推演决策已确认并成功应用' } : step
+              step.id.includes('scan_3') ? { ...step, status: 'completed' as const, label: '推演决策已确认，正在自动撰写章节' } : step
             );
             messages[i] = { ...messages[i], trace: newTrace };
             break;
@@ -444,29 +505,35 @@ export default function App() {
         const confirmation: AgentMessage = {
           id: `confirm_${Date.now()}`,
           role: 'ai',
-          content: `方案已合并至主推演分支。系统监测到剧情一致性提升 12%，正在进入静默观察模式。`,
+          content: `方案已合并并进入自动化撰写阶段。正在重构“第5章 初显峥嵘”的文本脉络。`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         return [...messages, confirmation];
       });
+
+      // Completion after writing period
+      setTimeout(() => {
+        setAgentStatus('completed');
+      }, 120000);
     }, 2500);
   };
 
   const handleToggleAgent = () => {
     if (aiPanelRef.current) {
-      const isCollapsed = aiPanelRef.current.isCollapsed();
+      const isCurrentlyAgent = isAgentMode;
+      const isExpanded = !aiPanelRef.current.isCollapsed();
       
-      // Case 1: Panel is open and currently in Agent Mode -> Close it
-      if (!isCollapsed && isAgentMode) {
+      // If already in Agent mode and expanded, then collapse
+      if (isCurrentlyAgent && isExpanded) {
         aiPanelRef.current.collapse();
+        if (agentStatus === 'panel_open' || agentStatus === 'idle') {
+          setAgentStatus('none');
+        }
       } 
-      // Case 2: Panel is open but in Toolbox Mode -> Switch to Agent
-      else if (!isCollapsed && !isAgentMode) {
+      // Otherwise switch to Agent mode and expand
+      else {
         setIsAgentMode(true);
-      }
-      // Case 3: Panel is closed -> Open it and force Agent Mode
-      else if (isCollapsed) {
-        setIsAgentMode(true);
+        setAgentStatus('panel_open');
         aiPanelRef.current.expand();
       }
     }
@@ -482,6 +549,9 @@ export default function App() {
 
   const handleAIPanelClose = () => {
     if (aiPanelRef.current) aiPanelRef.current.collapse();
+    if (agentStatus === 'panel_open' || agentStatus === 'idle') {
+      setAgentStatus('none');
+    }
   };
 
   const handleCancelAgentProcess = () => {
@@ -509,6 +579,21 @@ export default function App() {
     setAnalyticsHeight(percentage);
   };
 
+  const handleShowLogs = () => {
+    if (aiPanelRef.current) {
+      const isCurrentlyLogs = activeAITab === 'ai-logs' && !isAgentMode;
+      const isExpanded = !aiPanelRef.current.isCollapsed();
+      
+      if (isCurrentlyLogs && isExpanded) {
+        aiPanelRef.current.collapse();
+      } else {
+        setIsAgentMode(false);
+        setActiveAITab('ai-logs');
+        aiPanelRef.current.expand();
+      }
+    }
+  };
+
   const handleSidebarTabChange = (tab: SidebarTab) => {
     if (tab === 'settings') {
       setIsSettingsOpen(true);
@@ -530,18 +615,18 @@ export default function App() {
   };
 
   const handleAITabChange = (tab: SidebarTab) => {
-    // If we click a specific tool tab, we should exit Agent mode
-    setIsAgentMode(false);
-    
-    if (activeAITab === tab) {
-      if (aiPanelRef.current) {
-        const isCollapsed = aiPanelRef.current.isCollapsed();
-        if (isCollapsed) aiPanelRef.current.expand();
-        else aiPanelRef.current.collapse();
-      }
-    } else {
-      setActiveAITab(tab);
-      if (aiPanelRef.current) {
+    if (aiPanelRef.current) {
+      const isCurrentlySameTab = activeAITab === tab && !isAgentMode;
+      const isExpanded = !aiPanelRef.current.isCollapsed();
+
+      // If already on the same tool tab and expanded, then collapse
+      if (isCurrentlySameTab && isExpanded) {
+        aiPanelRef.current.collapse();
+      } 
+      // Otherwise switch to this tool tab and expand
+      else {
+        setIsAgentMode(false);
+        setActiveAITab(tab);
         aiPanelRef.current.expand();
       }
     }
@@ -589,14 +674,16 @@ export default function App() {
     setView('onboarding');
     // SINGLE SOURCE OF TRUTH: Trigger THE FIRST AI response here
     handleAddAgentAIResponse(
-      `已完成“世界观”的初步生成。你可以审阅左侧的设定项。如果你对某个部分不满意，或者想针对某些细节进行更深度的推演（例如具体的地理风貌或社会矛盾），可以直接咨询我。`,
-      'world'
+      `世界观解析协议已就绪\n深度推演引擎已完成底层架构映射，请审阅核心设定。`,
+      'world',
+      true
     );
   };
 
   const handleSelectNovel = (id: string) => {
     const novel = novels.find(n => n.id === id);
     if (novel) setCurrentStoryTitle(novel.title);
+    setActiveChapterId('chap_1');
     setView('editor');
   };
 
@@ -657,6 +744,7 @@ export default function App() {
               messages={agentMessages}
               onSendMessage={handleSendAgentMessage}
               onAddAIMessage={handleAddAgentAIResponse}
+              theme={theme}
             />
           </motion.div>
         )}
@@ -678,6 +766,12 @@ export default function App() {
               />
               
               <div className="flex-1 h-full w-full min-w-0 overflow-hidden relative">
+                <WorldExplorer 
+                  isOpen={isExplorerOpen} 
+                  onClose={() => setIsExplorerOpen(false)} 
+                  theme={theme}
+                />
+                
                 <Group 
                   key="STABLE_FRAME"
                   id="PLOT_PILOT_STABLE_V6"
@@ -719,11 +813,16 @@ export default function App() {
                                 book={book} 
                                 activeChapterId={activeChapterId} 
                                 onChapterSelect={setActiveChapterId} 
+                                theme={theme}
                               />
                             </div>
                           ) : activeSidebarTab === 'branch' ? (
                             <div className="h-full">
                               <BranchPanel isMockLoadingEnabled={isMockLoadingEnabled} />
+                            </div>
+                          ) : activeSidebarTab === 'world' ? (
+                            <div className="h-full">
+                              <WorkflowSidebar theme={theme} />
                             </div>
                           ) : (
                             <div className="h-full flex flex-col items-center justify-center text-muted-text p-8 text-center">
@@ -731,7 +830,7 @@ export default function App() {
                                 <div className="w-2 h-2 rounded-full bg-brand-red animate-pulse" />
                               </div>
                               <span className="font-sans font-bold text-[10px] uppercase tracking-[0.3em]">模块扩展中</span>
-                              <span className="font-mono text-[9px] mt-2 opacity-40 uppercase tracking-widest">Under Construction</span>
+                              <span className="font-mono text-[9px] mt-2 opacity-40 uppercase tracking-widest">构建中</span>
                             </div>
                           )}
                         </div>
@@ -768,6 +867,7 @@ export default function App() {
                         >
                           <Editor 
                             title={activeChapter.title}
+                            status={activeChapter.status}
                             content={activeChapter.content}
                             onChange={handleContentChange}
                             topOffset={topOffset}
@@ -775,34 +875,36 @@ export default function App() {
                             onToggleAnalytics={toggleAnalyticsVisibility}
                             isAnalyticsVisible={isAnalyticsVisible}
                             isDarkMode={isDarkMode}
+                            forcePlaying={agentStatus === 'writing' && activeChapterId === 'chap_5'}
+                            onStartAutomation={handleStartAutomation}
                           />
                         </motion.div>
 
-                        {/* Narrow HUD Utility Panel - Decoupled from isAnalyticsVisible for separate control */}
+                        {/* Narrow HUD Utility Panel - Main ProcessMonitor */}
                         <AnimatePresence>
-                          {!(isAIPanelVisible && isAgentMode) && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-                              className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-auto transition-all duration-500 ease-[0.23,1,0.32,1]"
-                              style={{ 
-                                bottom: isAnalyticsVisible 
-                                  ? (isAnalyticsCollapsed ? '78px' : `calc(${analyticsHeight}% + 8px)`)
-                                  : '24px', // Standard bottom spacing when chart is hidden
-                                width: 'calc(100% - 2rem)',
-                                maxWidth: (isAnalyticsVisible && !isAnalyticsCollapsed) ? '48rem' : '28rem'
-                              }}
-                            >
-                              <ProcessMonitor 
-                                isThinking={isActiveThinking}
-                                isCompleted={!isActiveThinking}
-                                steps={activeTraceSteps}
-                                onIconClick={handleOpenAgent}
-                                isPanelOpen={isAIPanelVisible}
-                              />
-                            </motion.div>
-                          )}
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                            className="absolute left-1/2 -translate-x-1/2 z-[45] pointer-events-auto"
+                            style={{ 
+                              bottom: isAnalyticsVisible 
+                                ? (isAnalyticsCollapsed ? '78px' : `calc(${analyticsHeight}% + 8px)`)
+                                : '24px'
+                            }}
+                          >
+                            <ProcessMonitor 
+                              isThinking={isActiveThinking}
+                              isCompleted={!isActiveThinking}
+                              steps={activeTraceSteps}
+                              onIconClick={handleOpenAgent}
+                              isPanelOpen={false}
+                              status={agentStatus}
+                              theme={theme}
+                              isAnalyticsVisible={isAnalyticsVisible}
+                              isAnalyticsCollapsed={isAnalyticsCollapsed}
+                            />
+                          </motion.div>
                         </AnimatePresence>
 
                         {/* Bottom HUD Layer: Analytics Panel */}
@@ -851,6 +953,9 @@ export default function App() {
                         setIsAIPanelVisible(true);
                       } else {
                         setIsAIPanelVisible(false);
+                        if (agentStatus === 'panel_open' || agentStatus === 'idle') {
+                          setAgentStatus('none');
+                        }
                       }
                     }}
                     panelRef={aiPanelRef}
@@ -876,11 +981,84 @@ export default function App() {
                           onCancelProcess={handleCancelAgentProcess}
                         />
                       </div>
-                    ) : (
+                    ) : activeAITab === 'ai-logs' ? (
+                      <div className="h-full w-full p-4 overflow-hidden flex flex-col">
+                        <div className="flex-1 flex flex-col hud-panel overflow-hidden border-hud-border/40">
+                          {/* Log Header */}
+                          <div className="p-3 border-b border-hud-border/30 flex items-center justify-between shrink-0 bg-gradient-to-r from-brand-red/[0.02] to-transparent">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-brand-red/10 border border-brand-red/20">
+                                <div className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" />
+                                <span className="text-[10px] font-display uppercase tracking-widest text-brand-red font-bold">推演中</span>
+                              </div>
+                              <h3 className={cn(
+                                "text-sm font-display uppercase tracking-widest",
+                                isDarkMode ? "text-white/90" : "text-black/80"
+                              )}>
+                                核心推演日志
+                              </h3>
+                            </div>
+                            <span className="text-[10px] font-mono text-muted-text">v2.4.0-稳定版</span>
+                          </div>
+
+                          {/* Logs Container */}
+                          <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar font-mono text-[11px]">
+                          {[
+                            { time: '18:41:58.210', level: '系统', msg: '正在验证 Gemini-Pro 模型凭证...', details: '{ provider: "Google", region: "asia-east1" }', color: 'text-brand-red' },
+                            { time: '18:41:59.450', level: '错误', msg: '模型服务连接超时', details: 'Timeout after 5000ms. Check network/proxy.', color: 'text-red-500' },
+                            { time: '18:42:00.100', level: '系统', msg: '自动执行指数退避重试 (Retry 1/3)...', details: '{ delay: "1000ms" }', color: 'text-brand-red' },
+                            { time: '18:42:00.900', level: '成功', msg: '连接已建立，节点握手成功', details: '{ latency: "142ms", encryption: "TLS 1.3" }', color: 'text-emerald-500' },
+                            { time: '18:42:01.034', level: '系统', msg: '核心推演引擎初始化成功', details: '{ mode: "creative_narrative", depth: 4 }', color: 'text-brand-red' },
+                            { time: '18:42:02.112', level: '信息', msg: '语义空间向量检索中...', details: 'query: "墨染山河 - 冲突节点"', color: 'text-blue-400' },
+                            { time: '18:42:03.567', level: '追踪', msg: '角色 [李寒秋] 心理状态更新', details: '{ motivation: "revenge", tension: 0.85 }', color: 'text-emerald-400' },
+                            { time: '18:42:04.200', level: '信息', msg: '检测到逻辑分支冲突', details: 'node_id: "cliff_edge_v2"', color: 'text-blue-400' },
+                            { time: '18:42:04.201', level: '警告', msg: '情节合理性校验不通过: 物理引擎限制', details: 'Gravity variance detected in gravity-free scene.', color: 'text-amber-500' },
+                            { time: '18:42:05.102', level: '操作', msg: '执行启发式重写策略', details: 'Strategy: "The Hero Journey Restructure"', color: 'text-purple-400' },
+                            { time: '18:42:06.884', level: '成功', msg: '生成 4 个备选剧情分支', details: '[ "坠崖生还", "暗器截获", "援兵突至" ]', color: 'text-emerald-500' },
+                            { time: '18:42:07.129', level: '信息', msg: '开始注入环境氛围描述', details: 'Style: "Chinese Ink - Dark"', color: 'text-blue-400' },
+                          ].map((log, i) => (
+                            <div key={`app-log-${i}-${log.time}`} className={cn(
+                              "group border-l-2 pl-3 py-1.5 transition-all duration-300 rounded-r-lg",
+                              isDarkMode ? "border-white/5 hover:bg-white/5" : "border-black/5 hover:bg-black/5"
+                            )}>
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <span className="opacity-30 text-[9px] tabular-nums font-mono">{log.time}</span>
+                                <span className={cn(
+                                  "px-1.5 py-0.5 rounded border text-[9px] font-bold tracking-wider",
+                                  log.color,
+                                  isDarkMode ? "bg-white/5 border-white/5" : "bg-black/5 border-black/5"
+                                )}>
+                                  {log.level}
+                                </span>
+                                <span className={cn(
+                                  "font-sans text-[12px]",
+                                  isDarkMode ? "text-white/80" : "text-black/80"
+                                )}>{log.msg}</span>
+                              </div>
+                              <div className={cn(
+                                "text-[10px] text-muted-text p-2 rounded-lg border",
+                                isDarkMode ? "bg-white/[0.03] border-white/5" : "bg-black/[0.03] border-black/5"
+                              )}>
+                                <span className="opacity-40 mr-2 uppercase text-[8px] font-bold tracking-widest">Payload:</span>
+                                <code className="font-mono">{log.details}</code>
+                              </div>
+                            </div>
+                          ))}
+
+                          <div className="flex items-center gap-2 pt-4 opacity-40 animate-pulse pb-10">
+                            <span className="text-[9px] font-mono">18:42:08.000</span>
+                            <span className="text-[9px] font-bold">等待</span>
+                            <span className="text-[10px]">监听数据流输入中...</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
                       <div className="w-full h-full overflow-hidden">
                         <AIPanel 
                           theme={theme} 
                           isMockLoadingEnabled={isMockLoadingEnabled}
+                          activeChapter={activeChapter}
                           onClose={handleAIPanelClose}
                           onMinimize={handleAIPanelMinimize}
                         />
@@ -894,6 +1072,8 @@ export default function App() {
               activeTab={activeAITab} 
               onTabChange={handleAITabChange} 
               onToggleAgent={handleToggleAgent}
+              onShowLogs={handleShowLogs}
+              onOpenExplorer={() => setIsExplorerOpen(true)}
               isAgentMode={isAgentMode}
               isPanelVisible={isAIPanelVisible}
             />
@@ -911,7 +1091,7 @@ export default function App() {
       <FloatingAgent 
         isDarkMode={isDarkMode} 
         status={agentStatus}
-        onClick={handleOpenAgent}
+        onClick={handleAgentCoreClick}
       />
     </div>
   );

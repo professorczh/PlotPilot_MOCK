@@ -3,7 +3,9 @@ export interface Chapter {
   title: string;
   content: string;
   wordCount: number;
-  status: 'draft' | 'completed';
+  status: 'draft' | 'completed' | 'processing';
+  relatedCharacters?: string[];
+  relatedLocations?: string[];
 }
 
 export interface PlotStage {
@@ -45,9 +47,9 @@ export interface TensionPoint {
   conflict: number;
 }
 
-export type AgentStatus = 'idle' | 'panel_open' | 'starting' | 'running' | 'paused' | 'completed' | 'error';
+export type AgentStatus = 'none' | 'idle' | 'panel_open' | 'starting' | 'running' | 'paused' | 'completed' | 'writing' | 'error';
 
-export type SidebarTab = 'chapters' | 'search' | 'world' | 'branch' | 'settings' | 'characters' | 'ai-chat' | 'ai-deduce' | 'ai-suggest' | 'ai-polish';
+export type SidebarTab = 'chapters' | 'search' | 'world' | 'branch' | 'settings' | 'characters' | 'ai-chat' | 'ai-deduce' | 'ai-suggest' | 'ai-polish' | 'ai-logs';
 
 export interface TraceStep {
   id: string;
@@ -74,6 +76,7 @@ export interface AgentMessage {
   trace?: TraceStep[];
   isThinking?: boolean;
   suggestions?: AISuggestion[];
+  isSystem?: boolean;
 }
 
 export type ThemeMode = 'ink' | 'paper' | 'classic';

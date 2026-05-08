@@ -1,4 +1,4 @@
-import { Sparkles, MessageSquare, Briefcase, Brain, Lightbulb, Wand2, History, Trash2, LucideIcon } from 'lucide-react';
+import { Sparkles, MessageSquare, Briefcase, Brain, Lightbulb, Wand2, History, Trash2, Terminal, Map, LucideIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { SidebarTab } from '../types';
 
@@ -6,6 +6,8 @@ interface AIActivityBarProps {
   activeTab: SidebarTab;
   onTabChange: (tab: SidebarTab) => void;
   onToggleAgent: () => void;
+  onShowLogs: () => void;
+  onOpenExplorer?: () => void;
   isAgentMode?: boolean;
   isPanelVisible?: boolean;
 }
@@ -18,13 +20,13 @@ interface NavItem {
 
 const aiNavItems: NavItem[] = [
   { id: 'ai-chat', icon: Briefcase, label: '灵感工具' },
-  { id: 'ai-deduce', icon: Brain, label: '剧情推演' },
+  { id: 'ai-deduce', icon: Map, label: '世界架构' },
   { id: 'ai-suggest', icon: Lightbulb, label: '创作建议' },
-  { id: 'ai-polish', icon: Wand2, label: '文字润色' },
 ];
 
-export default function AIActivityBar({ activeTab, onTabChange, onToggleAgent, isAgentMode, isPanelVisible }: AIActivityBarProps) {
+export default function AIActivityBar({ activeTab, onTabChange, onToggleAgent, onShowLogs, onOpenExplorer, isAgentMode, isPanelVisible }: AIActivityBarProps) {
   const isAgentActive = isAgentMode && isPanelVisible;
+  const isLogsActive = activeTab === 'ai-logs' && isPanelVisible && !isAgentMode;
 
   return (
     <div className="w-[48px] bg-app-bg flex flex-col items-center pb-4 z-10 relative">
@@ -55,6 +57,8 @@ export default function AIActivityBar({ activeTab, onTabChange, onToggleAgent, i
               onClick={() => {
                 if (item.id === 'ai-chat') {
                   onTabChange(item.id);
+                } else if (item.id === 'ai-deduce') {
+                  onOpenExplorer?.();
                 }
               }}
               className={cn(
@@ -62,35 +66,38 @@ export default function AIActivityBar({ activeTab, onTabChange, onToggleAgent, i
                 (activeTab === item.id && isPanelVisible && !isAgentMode)
                   ? "text-brand-red bg-brand-red/10" 
                   : "text-muted-text hover:text-text-main hover:bg-white/5",
-                item.id !== 'ai-chat' && "cursor-not-allowed opacity-60"
+                (item.id !== 'ai-chat' && item.id !== 'ai-deduce') && "cursor-not-allowed opacity-60"
               )}
-              title={item.id === 'ai-chat' ? item.label : `${item.label} (开发中)`}
+              title={(item.id === 'ai-chat' || item.id === 'ai-deduce') ? item.label : `${item.label} (开发中)`}
             >
               <item.icon className={cn(
                 "w-[18px] h-[18px] transition-transform duration-300",
                 (activeTab === item.id && isPanelVisible && !isAgentMode) ? "scale-110" : "scale-100 group-hover:scale-110",
-                item.id !== 'ai-chat' && "group-hover:scale-100"
+                (item.id !== 'ai-chat' && item.id !== 'ai-deduce') && "group-hover:scale-100"
               )} />
             </button>
           ))}
         </div>
 
         {/* Bottom Actions */}
-        <div className="flex flex-col items-center gap-4 mt-auto">
+        <div className="mt-auto pb-2">
           <button 
-            className="p-2.5 transition-all duration-300 text-muted-text hover:text-text-main hover:bg-white/5 rounded-lg"
-            title="历史记录"
+            onClick={onShowLogs}
+            className={cn(
+              "group relative p-2.5 transition-all duration-300 rounded-lg",
+              isLogsActive 
+                ? "text-brand-red bg-brand-red/10" 
+                : "text-muted-text hover:text-text-main hover:bg-white/5"
+            )}
+            title="系统日志"
           >
-            <History className="w-[18px] h-[18px]" />
-          </button>
-
-          <button
-            className="p-2.5 transition-all duration-300 text-muted-text hover:text-red-400 hover:bg-red-500/5 rounded-lg"
-            title="清空上下文"
-          >
-            <Trash2 className="w-[18px] h-[18px]" />
+            <Terminal className={cn(
+              "w-[18px] h-[18px] transition-transform duration-300",
+              isLogsActive ? "scale-110" : "group-hover:scale-110"
+            )} />
           </button>
         </div>
+
       </div>
     </div>
   );
