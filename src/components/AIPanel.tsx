@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Sparkles, Brain, Network, ChevronDown, Plus, ListTree, X, 
   Library, Wrench, Activity, ShieldCheck, AlertCircle, Radar,
-  Drama, Radio, ExternalLink, CheckCircle2, Minus, Map, Box
+  Drama, Radio, ExternalLink, CheckCircle2, Minus, Map, Box,
+  Image as ImageIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
@@ -10,6 +11,7 @@ import { ThemeMode, Chapter } from '../types';
 import { characterData, geographyData } from '../constants/storyData';
 import RelationshipGraph from './RelationshipGraph';
 import WorldMapGraph from './WorldMapGraph';
+import HudImage from './HudImage';
 
 type AITab = 'deduction' | 'analytics' | 'tools';
 
@@ -278,11 +280,11 @@ export default function AIPanel({
                                         "w-2/5 relative h-full shrink-0 overflow-hidden border-r",
                                         isDarkMode ? "border-white/10" : "border-black/5"
                                       )}>
-                                        <img 
+                                        <HudImage 
                                           src={loc.img} 
                                           alt={loc.name}
-                                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-80 group-hover/card:opacity-100"
-                                          referrerPolicy="no-referrer"
+                                          isDarkMode={isDarkMode}
+                                          className="opacity-80 group-hover/card:opacity-100 group-hover/card:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
                                         {isRelated && (
@@ -442,11 +444,11 @@ export default function AIPanel({
                                         "w-2/5 relative h-full shrink-0 overflow-hidden border-r",
                                         isDarkMode ? "border-white/10" : "border-black/5"
                                       )}>
-                                        <img 
+                                        <HudImage 
                                           src={char.img} 
                                           alt={char.name}
-                                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 opacity-80 group-hover/card:opacity-100"
-                                          referrerPolicy="no-referrer"
+                                          isDarkMode={isDarkMode}
+                                          className="opacity-80 group-hover/card:opacity-100 group-hover/card:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
                                         {isRelated && (

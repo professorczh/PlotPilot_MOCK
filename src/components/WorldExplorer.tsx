@@ -7,6 +7,7 @@ import RelationshipGraph from './RelationshipGraph';
 import RelationshipGraph3D from './RelationshipGraph3D';
 import WorldMapGraph from './WorldMapGraph';
 import WorldMapGraph3D from './WorldMapGraph3D';
+import HudImage from './HudImage';
 
 interface WorldExplorerProps {
   isOpen: boolean;
@@ -288,11 +289,11 @@ export default function WorldExplorer({ isOpen, onClose, theme = 'ink' }: WorldE
                                   isDarkMode ? "bg-white/[0.03] border-white/10 hover:border-brand-red/50" : "bg-white border-hud-border hover:border-brand-red/40"
                                 )}
                               >
-                                <img 
+                                <HudImage 
                                   src={loc.img} 
                                   alt={loc.name}
-                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.4] group-hover:grayscale-0"
-                                  onError={(e) => (e.currentTarget.src = `https://picsum.photos/seed/${loc.id}/800/1200`)}
+                                  isDarkMode={isDarkMode}
+                                  className="grayscale-[0.4] group-hover:grayscale-0 group-hover:scale-110"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                                 
@@ -448,11 +449,11 @@ export default function WorldExplorer({ isOpen, onClose, theme = 'ink' }: WorldE
                                      )}
                                    >
                                      <div className="md:w-[32%] w-full h-48 md:h-auto relative overflow-hidden shrink-0 border-b md:border-b-0 md:border-r border-hud-border/10">
-                                       <img 
+                                       <HudImage 
                                          src={c.img} 
                                          alt={c.name} 
-                                         className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 grayscale-[0.6] group-hover:grayscale-0"
-                                         onError={(e) => (e.currentTarget.src = `https://picsum.photos/seed/${c.id}/600/800`)}
+                                         isDarkMode={isDarkMode}
+                                         className="grayscale-[0.6] group-hover:grayscale-0 group-hover:scale-110"
                                        />
                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                        
