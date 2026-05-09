@@ -78,10 +78,10 @@ export default function Onboarding({
       };
       
       const stepIntros: Record<string, string> = {
-        '人物': '核心博弈实体映射完成\n基于信息流协议，已检索到 7 处关键因果节点',
-        '地图': '核心逻辑节点同步完成\n已完成大秦都城咸阳及周边战略节点的实境渲染',
-        '故事线': '剧情主轴推演就绪\n基于当前人物关系，已生成 3 条高概率逻辑分支',
-        '情节弧': '时空曲率修正完成\n正在锚定章节起承转合的压力张力分布曲线'
+        '人物': '核心博弈实体映射完成',
+        '地图': '核心逻辑节点同步完成',
+        '故事线': '剧情主轴推演就绪',
+        '情节弧': '时空曲率修正完成'
       };
       
       setCurrentStep(nextStep);
@@ -327,7 +327,7 @@ function ThinkingState({ text, step, progress, isFinalizing, isDarkMode }: { tex
         </h2>
         <div className="flex flex-col items-center gap-2 w-full max-w-lg mx-auto">
           {/* Status Bar Frame */}
-          <div className={`relative flex items-center w-full min-h-[84px] px-12 py-4 bg-panel-bg/30 border rounded-2xl backdrop-blur-md transition-all duration-700 ${isFinalizing ? 'border-green-500/40 shadow-[0_0_20px_rgba(34,197,94,0.15)]' : 'border-hud-border/40'}`}>
+          <div className={`relative flex items-center w-full min-h-[84px] px-20 py-4 bg-panel-bg/30 border rounded-2xl backdrop-blur-md transition-all duration-700 ${isFinalizing ? 'border-green-500/40 shadow-[0_0_20px_rgba(34,197,94,0.15)]' : 'border-hud-border/40'}`}>
             
             {/* Left Anchored Icon: Matches screenshot exactly */}
             <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center justify-center">
@@ -413,16 +413,11 @@ function CharactersContent({ isDarkMode }: { isDarkMode: boolean }) {
   return (
     <div className="flex flex-col h-full py-4 lg:py-6 overflow-hidden min-h-0">
       {/* Header Info */}
-      <div className="flex items-center justify-between px-4 mb-6 shrink-0 h-10">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-xl font-display font-bold text-text-main tracking-widest uppercase">核心博弈实体映射完成</h3>
-          <p className="text-[9px] font-display tracking-[0.3em] uppercase opacity-40">已检索到 7 处关键因果节点</p>
-        </div>
-      </div>
-
-      <div className="flex-1 w-full max-w-[1440px] mx-auto min-h-0 overflow-hidden relative">
-        {/* Float Content Mode Toggle */}
-        <div className="absolute top-6 right-6 z-50 flex bg-panel-bg/60 backdrop-blur-md border border-hud-border/20 rounded-full p-1 shadow-2xl select-none">
+      <div className="flex items-center justify-between px-5 mb-8 shrink-0 h-10">
+        <h3 className="text-xl font-display font-bold text-text-main tracking-widest uppercase">核心博弈实体映射完成</h3>
+        
+        {/* Content Mode Toggle */}
+        <div className="flex bg-panel-bg/60 backdrop-blur-md border border-hud-border/20 rounded-full p-1 shadow-xl select-none">
           <button 
             onClick={() => setActiveView('graph')}
             className={cn(
@@ -444,7 +439,9 @@ function CharactersContent({ isDarkMode }: { isDarkMode: boolean }) {
             卡片模式
           </button>
         </div>
+      </div>
 
+      <div className="flex-1 w-full max-w-[1440px] mx-auto min-h-0 overflow-hidden relative">
         <AnimatePresence mode="wait">
           {activeView === 'graph' ? (
             <motion.div 
@@ -572,16 +569,11 @@ function MapContent({ isDarkMode }: { isDarkMode: boolean }) {
   return (
     <div className="flex flex-col h-full py-4 lg:py-6 overflow-hidden min-h-0">
       {/* Header Info */}
-      <div className="flex items-center justify-between px-4 mb-6 shrink-0 h-10">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-xl font-display font-bold text-text-main tracking-widest uppercase">核心逻辑节点同步完成</h3>
-          <p className="text-[9px] font-display tracking-[0.3em] uppercase opacity-40">已完成大秦都城咸阳及周边战略节点的实境渲染</p>
-        </div>
-      </div>
-
-      <div className="flex-1 w-full max-w-[1440px] mx-auto min-h-0 overflow-hidden relative">
-        {/* Float Content Mode Toggle */}
-        <div className="absolute top-6 right-6 z-50 flex bg-panel-bg/60 backdrop-blur-md border border-hud-border/20 rounded-full p-1 shadow-2xl select-none">
+      <div className="flex items-center justify-between px-5 mb-8 shrink-0 h-10">
+        <h3 className="text-xl font-display font-bold text-text-main tracking-widest uppercase">核心逻辑节点同步完成</h3>
+        
+        {/* Content Mode Toggle */}
+        <div className="flex bg-panel-bg/60 backdrop-blur-md border border-hud-border/20 rounded-full p-1 shadow-xl select-none">
           <button 
             onClick={() => setActiveView('map')}
             className={cn(
@@ -603,7 +595,9 @@ function MapContent({ isDarkMode }: { isDarkMode: boolean }) {
             卡片模式
           </button>
         </div>
+      </div>
 
+      <div className="flex-1 w-full max-w-[1440px] mx-auto min-h-0 overflow-hidden relative">
         <AnimatePresence mode="wait">
           {activeView === 'map' ? (
             <motion.div 

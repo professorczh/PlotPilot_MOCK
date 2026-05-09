@@ -340,9 +340,9 @@ export default function WorkflowCanvasModal({ isOpen, onClose, theme = 'ink' }: 
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[9px] font-display text-muted-text uppercase tracking-[0.2em]">Prompt 逻辑参数</label>
+                      <label className="text-[10px] font-display text-muted-text uppercase tracking-[0.2em]">Prompt 逻辑参数</label>
                       <div className={cn(
-                        "border rounded-lg p-3 font-mono text-[10px] leading-relaxed",
+                        "border rounded-lg p-3 font-mono text-[11px] leading-relaxed",
                         isDarkMode ? "bg-black/60 border-white/10 text-muted-text" : "bg-black/5 border-black/5 text-text-main/70"
                       )}>
                         {selectedNode.prompt}
@@ -350,11 +350,11 @@ export default function WorkflowCanvasModal({ isOpen, onClose, theme = 'ink' }: 
                     </div>
 
                     <div className="space-y-2">
-                    <label className="text-[9px] font-display text-muted-text uppercase tracking-[0.2em]">上下文依存 / 标签</label>
+                    <label className="text-[10px] font-display text-muted-text uppercase tracking-[0.2em]">上下文依存 / 标签</label>
                     <div className="flex flex-wrap gap-2">
                       {selectedNode.tags?.map((tag: string) => (
                         <span key={tag} className={cn(
-                          "px-2 py-0.5 rounded-full border text-[8px]",
+                          "px-2 py-0.5 rounded-full border text-[10px]",
                           isDarkMode ? "bg-white/5 border-white/10 text-white/60" : "bg-black/5 border-black/10 text-text-main/60"
                         )}>{tag}</span>
                       ))}

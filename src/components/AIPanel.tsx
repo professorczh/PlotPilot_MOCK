@@ -288,9 +288,9 @@ export default function AIPanel({
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
                                         {isRelated && (
-                                          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-brand-red border border-white/20 backdrop-blur-md z-10 shadow-lg scale-[0.8] origin-top-left">
+                                          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-brand-red border border-white/20 backdrop-blur-md z-10 shadow-lg scale-[0.9] origin-top-left">
                                             <div className="w-1 h-1 rounded-full bg-white" />
-                                            <span className="text-[7px] text-white font-display uppercase tracking-[0.1em] font-bold">关联</span>
+                                            <span className="text-[9px] text-white font-display uppercase tracking-[0.1em] font-bold">关联</span>
                                           </div>
                                         )}
                                       </div>
@@ -299,18 +299,18 @@ export default function AIPanel({
                                       <div className="flex-1 p-2 flex flex-col justify-center min-w-0 relative">
                                         <div className="flex flex-col gap-0.5 mb-1.5">
                                            <span className={cn(
-                                             "text-[10px] font-sans font-extrabold truncate",
+                                             "text-[11px] font-sans font-extrabold truncate",
                                              isDarkMode ? "text-white" : "text-black"
                                            )}>{loc.name}</span>
                                            <div className="flex items-center">
                                              <span className={cn(
-                                               "shrink-0 text-[6px] font-display uppercase tracking-widest px-1 border rounded-[2px]",
+                                               "shrink-0 text-[8px] font-display uppercase tracking-widest px-1 border rounded-[2px]",
                                                isDarkMode ? "border-white/20 text-white/60 bg-white/5" : "border-black/10 text-black/40 bg-black/5"
                                              )}>{loc.tag}</span>
                                            </div>
                                         </div>
                                         <p className={cn(
-                                          "text-[7px] line-clamp-2 leading-relaxed italic",
+                                          "text-[10px] line-clamp-2 leading-relaxed italic",
                                           isDarkMode ? "text-white/50" : "text-black/50"
                                         )}>"{loc.description}"</p>
                                       </div>
@@ -452,9 +452,9 @@ export default function AIPanel({
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
                                         {isRelated && (
-                                          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-brand-red border border-white/20 backdrop-blur-md z-10 shadow-lg scale-[0.8] origin-top-left">
+                                          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-brand-red border border-white/20 backdrop-blur-md z-10 shadow-lg scale-[0.9] origin-top-left">
                                             <div className="w-1 h-1 rounded-full bg-white" />
-                                            <span className="text-[7px] text-white font-display uppercase tracking-[0.1em] font-bold">关联</span>
+                                            <span className="text-[9px] text-white font-display uppercase tracking-[0.1em] font-bold">关联</span>
                                           </div>
                                         )}
                                       </div>
@@ -465,19 +465,19 @@ export default function AIPanel({
                                            <div className="flex items-center gap-1.5">
                                              <div className={cn("w-1.5 h-1.5 rounded-full", char.color)} />
                                              <span className={cn(
-                                               "text-[10px] font-sans font-extrabold truncate",
+                                               "text-[11px] font-sans font-extrabold truncate",
                                                isDarkMode ? "text-white" : "text-black"
                                              )}>{char.name}</span>
                                            </div>
                                            <div className="flex items-center">
                                              <span className={cn(
-                                               "shrink-0 text-[6px] font-display uppercase tracking-widest px-1 border rounded-[2px]",
+                                               "shrink-0 text-[8px] font-display uppercase tracking-widest px-1 border rounded-[2px]",
                                                isDarkMode ? "border-white/20 text-white/50 bg-white/5" : "border-black/10 text-black/40 bg-black/5"
                                              )}>{char.role}</span>
                                            </div>
                                         </div>
                                         <p className={cn(
-                                          "text-[7px] line-clamp-2 leading-relaxed italic",
+                                          "text-[10px] line-clamp-2 leading-relaxed italic",
                                           isDarkMode ? "text-white/50" : "text-black/50"
                                         )}>"{char.description}"</p>
                                       </div>
